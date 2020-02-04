@@ -90,7 +90,6 @@ def _update_plot(rim_u238pb206, rim_pb207pb206, discordant_u238pb206, discordant
     xdata = [x1,x2]
     ydata = [y1,y2]
 
-
     if mean is None:
         t_error_xs = []
         t_error_ys = []

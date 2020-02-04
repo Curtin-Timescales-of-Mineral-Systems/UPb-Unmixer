@@ -3,6 +3,18 @@ import math
 from config import *
 
 ###############
+## Constants ##
+###############
+
+U_PB_STR = "²³⁸U/²⁰⁶Pb"
+PB_PB_STR = "²⁰⁷Pb/²⁰⁶Pb"
+
+SIGMA_OPTIONS = [2, 1]
+ERROR_TYPE_OPTIONS = ["Absolute", "Percentage"]
+
+SAVE_FILE = "concordia_save_data.pkl"
+
+###############
 ## Functions ##
 ###############
 
@@ -14,22 +26,19 @@ def round_to_sf(x, sf=2):
         return 0
     return round(x, sf-int(math.floor(math.log10(abs(x))))-1)
 
-def get_column_number(column_ref):
-    if isinstance(column_ref, int):
-        return column_ref
-    return ord(column_ref.lower()) - 97
-
 def print_progress_bar (iteration, total, prefix = 'Progress', suffix = '', decimals = 1, length = 50, fill = '█', printEnd = "\r"):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
-    # Print New Line on Complete
     if iteration == total: 
         print()
 
+def get_error_sigmas_str(sigmas):
+    return str(sigmas) + "σ"
+
 def get_error_str(sigmas, type):
-	return str(sigmas) + "σ "+ error_symbol(type, brackets=True)
+    return get_error_sigmas_str(sigmas) + " " + error_symbol(type, brackets=True)
 
 def error_symbol(type, brackets=False):
     if type != "Percentage":
@@ -54,67 +63,13 @@ def convert_from_stddev_without_sigmas(value, error, form):
         return 100.0*error/value
     return error
 
-###############
-## Constants ##
-###############
+def retainSize(widget):
+    policy = widget.sizePolicy();
+    policy.setRetainSizeWhenHidden(True);
+    widget.setSizePolicy(policy);
 
-ERROR_STR_MIXED_POINT = get_error_str(SIGMAS_MIXED_POINT_ERROR, ERROR_TYPE_MIXED_POINT)
-ERROR_STR_RIM_AGE = get_error_str(SIGMAS_RIM_AGE_ERROR, ERROR_TYPE_RIM_AGE)
-ERROR_STR_OUTPUT = get_error_str(SIGMAS_OUTPUT_ERROR, ERROR_TYPE_OUTPUT)
+###########
+## Other ##
+###########
 
-ACTUAL_DEFAULT_VALUE_RIM_AGE_ERROR = convert_from_stddev_with_sigmas(
-    DEFAULT_VALUE_RIM_AGE, 
-    DEFAULT_VALUE_RIM_AGE_ERROR, 
-    ERROR_TYPE_RIM_AGE, 
-    SIGMAS_RIM_AGE_ERROR
-)
-ACTUAL_MIN_VALUE_RIM_AGE_ERROR = convert_from_stddev_with_sigmas(
-    MIN_VALUE_RIM_AGE, 
-    MIN_VALUE_RIM_AGE_ERROR, 
-    ERROR_TYPE_RIM_AGE, 
-    SIGMAS_RIM_AGE_ERROR
-)
-ACTUAL_MAX_VALUE_RIM_AGE_ERROR = convert_from_stddev_with_sigmas(
-    MAX_VALUE_RIM_AGE, 
-    MAX_VALUE_RIM_AGE_ERROR, 
-    ERROR_TYPE_RIM_AGE, 
-    SIGMAS_RIM_AGE_ERROR
-)
-
-ACTUAL_DEFAULT_VALUE_MIXED_POINT_U238Pb206_ERROR = convert_from_stddev_with_sigmas(
-    DEFAULT_VALUE_MIXED_POINT_U238Pb206, 
-    DEFAULT_VALUE_MIXED_POINT_U238Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
-ACTUAL_MIN_VALUE_MIXED_POINT_U238Pb206_ERROR = convert_from_stddev_with_sigmas(
-    MIN_VALUE_MIXED_POINT_U238Pb206, 
-    MIN_VALUE_MIXED_POINT_U238Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
-ACTUAL_MAX_VALUE_MIXED_POINT_U238Pb206_ERROR = convert_from_stddev_with_sigmas(
-    MAX_VALUE_MIXED_POINT_U238Pb206, 
-    MAX_VALUE_MIXED_POINT_U238Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
-
-ACTUAL_DEFAULT_VALUE_MIXED_POINT_Pb207Pb206_ERROR = convert_from_stddev_with_sigmas(
-    DEFAULT_VALUE_MIXED_POINT_Pb207Pb206, 
-    DEFAULT_VALUE_MIXED_POINT_Pb207Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
-ACTUAL_MIN_VALUE_MIXED_POINT_Pb207Pb206_ERROR = convert_from_stddev_with_sigmas(
-    MIN_VALUE_MIXED_POINT_Pb207Pb206, 
-    MIN_VALUE_MIXED_POINT_Pb207Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
-ACTUAL_MAX_VALUE_MIXED_POINT_Pb207Pb206_ERROR = convert_from_stddev_with_sigmas(
-    MAX_VALUE_MIXED_POINT_Pb207Pb206, 
-    MAX_VALUE_MIXED_POINT_Pb207Pb206_ERROR, 
-    ERROR_TYPE_MIXED_POINT, 
-    SIGMAS_MIXED_POINT_ERROR
-)
+SIGMA_OPTIONS_STR = [get_error_sigmas_str(o) for o in SIGMA_OPTIONS]

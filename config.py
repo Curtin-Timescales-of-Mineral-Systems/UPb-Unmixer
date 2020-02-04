@@ -14,7 +14,6 @@ ERROR_TYPE_OUTPUT = "Absolute"
 
 # Other
 OUTPUT_SIGNIFICANT_FIGURES = 3
-MONTE_CARLO_SAMPLES = 10,000
 
 ##################
 ## CSV settings ##
@@ -34,35 +33,6 @@ COLUMN_RIM_AGE_ERROR = "T"
 
 # Column used to generate the name for the figures when run in CSV mode using the `-f` flag
 COLUMN_SAMPLE_NAME = 0
-
-
-##########################
-## Interactive settings ##
-##########################
-
-## Note that the values for the errors in this section are all assumed to be 1 sigma
-## and then converted according to the settings at the top
-
-DEFAULT_VALUE_RIM_AGE = 500
-DEFAULT_VALUE_RIM_AGE_ERROR = 25
-DEFAULT_VALUE_MIXED_POINT_U238Pb206 = 7
-DEFAULT_VALUE_MIXED_POINT_U238Pb206_ERROR = 0.5
-DEFAULT_VALUE_MIXED_POINT_Pb207Pb206 = 0.1
-DEFAULT_VALUE_MIXED_POINT_Pb207Pb206_ERROR = 0.01
-
-MIN_VALUE_RIM_AGE = 300
-MIN_VALUE_RIM_AGE_ERROR = 0
-MIN_VALUE_MIXED_POINT_U238Pb206 = 2
-MIN_VALUE_MIXED_POINT_U238Pb206_ERROR = 0.0
-MIN_VALUE_MIXED_POINT_Pb207Pb206 = 0.08
-MIN_VALUE_MIXED_POINT_Pb207Pb206_ERROR = 0.00
-
-MAX_VALUE_RIM_AGE = 2500
-MAX_VALUE_RIM_AGE_ERROR = 500
-MAX_VALUE_MIXED_POINT_U238Pb206 = 12
-MAX_VALUE_MIXED_POINT_U238Pb206_ERROR = 1
-MAX_VALUE_MIXED_POINT_Pb207Pb206 = 0.18
-MAX_VALUE_MIXED_POINT_Pb207Pb206_ERROR = 0.02
 
 ##################
 ## GUI settings ##

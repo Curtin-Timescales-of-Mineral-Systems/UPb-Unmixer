@@ -1,5 +1,46 @@
 import argparse
 import sys
+
+
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+
+def createPanel():
+    hbox = QHBoxLayout()
+    """
+    topleft = QFrame()
+    topleft.setFrameShape(QFrame.StyledPanel)
+
+    topright = QFrame()
+    topright.setFrameShape(QFrame.StyledPanel)
+
+    splitter1 = QSplitter(Qt.Horizontal)
+    splitter1.addWidget(topleft)
+    splitter1.addWidget(topright)
+
+    hbox.addWidget(splitter1)
+    """
+    return hbox
+    #    self.setLayout(hbox)
+
+    #self.setGeometry(300, 300, 300, 200)
+    #self.setWindowTitle('QSplitter')
+    #self.show()
+
+
+app = QApplication([])
+window = QWidget()
+layout = QVBoxLayout()
+layout.addWidget(QPushButton('Top'))
+layout.addWidget(QPushButton('Bottom'))
+window.setLayout(layout)
+window.show()
+app.exec_()
+
+print("Hi")
+
+"""
 import csv_mode
 import interactive_mode
 
@@ -30,4 +71,5 @@ elif args.mode == "csv":
         csv_mode.run(args.input, args.output, args.figures)
 else:
     error("Unrecognised mode: " + args.mode)
-    
+
+"""

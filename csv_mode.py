@@ -1,14 +1,17 @@
 import csv
 import math
-import calculations
 import os
 
 from config import *
-import error_propagation
 import utils
 
+from model.row import Row
+import model.errors as errors
+import model.calculations as calculations
+
+
 def run(input_file, output_file, save_figures):
-    rows = _read_input(input_file)
+    headers, rows = read_input(input_file)
 
     print("Reading input data from: " + os.path.abspath(input_file))
     print("Writing output data to: " + os.path.abspath(output_file))
@@ -21,29 +24,46 @@ def run(input_file, output_file, save_figures):
     else:
         figure_dir = None
 
-    utils.print_progress_bar(0, len(rows))
+    progress_callback = lambda r : utils.print_progress_bar(r, len(rows))
+
+    self.perform_all_calculations(headers, rows, figure_dir, progress_callback)
+
+    write_output(headers, rows, output_file)
+
+def read_input(input_file, settings):
+    with open(input_file, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=settings.delimiter, quotechar='|')
+        lines = [line for line in reader]
+
+        if settings.hasHeaders:
+            rows = [Row(line, settings) for line in lines[1:]]
+            headers = lines[0]
+        else:
+            rows = [Row(line, settings) for line in lines]
+            numberOfColumns = max([len(line) for line in lines])
+            headers = ["" for _ in range(numberOfColumns)]
+
+    return (headers, rows)
+
+def write_output(headers, rows, output_file):
+    with open(output_file, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=CSV_DELIMITER, quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(headers)
+        for row in rows:
+            writer.writerow(row.inputValues + row.outputValues)
+
+def perform_all_calculations(headers, rows, figure_dir, progress_callback):
+    error_strings = ["-" + utils.ERROR_STR_OUTPUT, "+" + utils.ERROR_STR_OUTPUT]
+    headers.extend(["Recon. age"] + error_strings + ["Recon. U238/Pb206"] + error_strings + ["Recon. Pb207/Pb206"] + error_strings)
+    
+    progress_callback(0)
     for i, row in enumerate(rows[1:]):
-        utils.print_progress_bar(i+1, len(rows))
+        progress_callback(i+1)
         try:
             _perform_calculations(i+1, row, figure_dir)
         except ValueError as e:
             utils.print_warning("\rIgnoring row " + str(i) + ": " + str(e))
-    utils.print_progress_bar(len(rows), len(rows))
-
-    error_strings = ["-" + utils.ERROR_STR_OUTPUT, "+" + utils.ERROR_STR_OUTPUT]
-    rows[0].extend(["Recon. age"] + error_strings + ["Recon. U238/Pb206"] + error_strings + ["Recon. Pb207/Pb206"] + error_strings)
-    _write_output(output_file, rows)
-
-def _read_input(input_file):
-    with open(input_file, newline='') as csvfile:
-        return [row for row in csv.reader(csvfile, delimiter=CSV_DELIMITER, quotechar='|')]
-
-
-def _write_output(output_file, rows):
-    with open(output_file, 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=CSV_DELIMITER, quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for row in rows:
-            spamwriter.writerow(row)
+    progress_callback(len(rows))
 
 def _perform_calculations(row_number, row, figure_dir=None):
     rim_age_value = _parse(COLUMN_RIM_AGE, "Rim age", row, row_number)
@@ -103,11 +123,11 @@ def _perform_calculations(row_number, row, figure_dir=None):
 ## Utility functions ##
 #######################
 
-def _parse(column_ref, column_name, row, row_number):
+def _parse(column_ref, row, row_number, column_name=None):
     column_number = utils.get_column_number(column_ref)
     string = row[column_number]
     try:
         return float(string)
     except:
-        raise ValueError("Invalid value '" + string + "' for '" + column_name + "' in row " + str(row_number) + " column " + str(column_number))
-
+        column_text = column_name if column_name else ("column " + column_number)
+        raise ValueError("Invalid value '" + string + "' for '" + column_text + "' in row " + str(row_number) + " column " + str(column_number))

@@ -3,18 +3,18 @@ Provides an abstraction over the different methods of error propagation during
 mathematical calculations
 """
 
-import uncertainties as fo
-import uncertainties.umath as fo_math
+#import uncertainties as fo
+#import uncertainties.umath as fo_math
 import soerp as so
 import soerp.umath as so_math
-import mcerp as mc
-import mcerp.umath as mc_math
+#import mcerp as mc
+#import mcerp.umath as mc_math
 import math
 
 import config
 
-mc.npts = config.MONTE_CARLO_SAMPLES
-error_order = 1
+#mc.npts = config.MONTE_CARLO_SAMPLES
+error_order = 2
 
 def set_order(order):
     global error_order
