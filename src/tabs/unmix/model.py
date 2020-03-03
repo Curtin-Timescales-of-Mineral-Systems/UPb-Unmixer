@@ -2,7 +2,7 @@ from enum import Enum
 
 import utils
 from model import errors, calculations
-from tabs.abstract.abstractModel import AbstractRow, ColumnSpec, CalculatedCell, AbstractModel, UncalculatedCell
+from tabs.abstract.model import AbstractRow, ColumnSpec, CalculatedCell, AbstractModel, UncalculatedCell
 from tabs.unmix.settings.calculation import UnmixCalculationSettings
 
 

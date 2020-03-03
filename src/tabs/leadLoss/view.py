@@ -1,5 +1,5 @@
 from model.settings import Settings
-from tabs.abstract.abstractView import AbstractView
+from tabs.abstract.view import AbstractView
 from tabs.leadLoss.dataPanel import LeadLossDataPanel
 from tabs.leadLoss.graphPanel import LeadLossGraphPanel
 

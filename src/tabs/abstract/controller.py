@@ -4,7 +4,7 @@ from model.settings import Settings
 from tabs.type import SettingsType
 
 
-class AbstractTabController():
+class AbstractTabController:
 
     def __init__(self, tabType, application):
         self.tabType = tabType

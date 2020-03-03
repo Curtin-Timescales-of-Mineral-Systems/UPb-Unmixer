@@ -23,7 +23,7 @@ def read_input(input_file, settings):
 
 
 def write_output(headers, rows, output_file):
-    with open(output_file, 'w', newline='', encoding="utf-8") as csvfile:
+    with open(output_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=CSV_DELIMITER, quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(headers)
         for row in rows:

@@ -2,7 +2,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem
 
 import utils
-from tabs.abstract.abstractDataPanel import AbstractDataPanel
+from tabs.abstract.dataPanel import AbstractDataPanel
 
 
 class LeadLossDataPanel(AbstractDataPanel):

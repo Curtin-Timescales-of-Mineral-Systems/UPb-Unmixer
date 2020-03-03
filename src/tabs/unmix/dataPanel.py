@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 import utils
 from model.settings import Settings
 
-from tabs.abstract.abstractDataPanel import AbstractDataPanel
+from tabs.abstract.dataPanel import AbstractDataPanel
 from tabs.type import TabType, SettingsType
 
 

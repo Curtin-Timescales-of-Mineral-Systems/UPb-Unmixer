@@ -1,6 +1,6 @@
 from model.async import UFloatAsyncTask, AsyncTask
 from model.settings import Settings
-from tabs.abstract.abstractTabController import AbstractTabController
+from tabs.abstract.controller import AbstractTabController
 from tabs.leadLoss.model import LeadLossModel
 from tabs.leadLoss.view import LeadLossView
 from tabs.type import TabType, SettingsType

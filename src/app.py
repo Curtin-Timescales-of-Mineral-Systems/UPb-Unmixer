@@ -1,15 +1,13 @@
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
 from tabs.unmix.controller import UnmixTabController
 from tabs.leadLoss.controller import LeadLossTabController
 
-from tabs.leadLoss.settings.exports import LeadLossExportSettings
-from tabs.leadLoss.settings.imports import LeadLossImportSettings
-from tabs.leadLoss.settings.calculation import LeadLossCalculationSettings
-from tabs.unmix.settings.imports import UnmixImportSettings
-
 import sys
+
+VERSION = "1.0"
 
 class Controller():
 
@@ -18,10 +16,11 @@ class Controller():
 
         app = QApplication(sys.argv)
         app.setStyle(QStyleFactory.create('Fusion'))
-        # app.setWindowIcon(QIcon("taskbar_icon.png"))
+        app.setWindowIcon(QIcon("resources/icon.png"))
+
         self.subControllers = [
             UnmixTabController(self),
-            LeadLossTabController(self)
+            #LeadLossTabController(self)
         ]
 
         self.mainWindow = GUI(self)
@@ -41,7 +40,7 @@ class GUI(QDialog):
         self.width = 1220
         self.height = 500
 
-        self.setWindowTitle('Concordia')
+        self.setWindowTitle('Concordia ' + "(v" + VERSION + ")")
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setWindowFlags(self.windowFlags() & Qt.WindowMaximizeButtonHint)
 

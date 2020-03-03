@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 
-from tabs.abstract.abstractGraphPanel import AbstractGraphPanel
+import utils
+from tabs.abstract.graphPanel import AbstractGraphPanel
 
 import matplotlib
 matplotlib.use('QT5Agg')
@@ -62,11 +63,10 @@ class UnmixGraphPanel(AbstractGraphPanel):
             self.axis.set_xlim(*self._default_xlim)
             self.axis.set_ylim(*self._default_ylim)
 
-            label = ""
             if row is not None and not row.validImports and row.processed:
-                label = "*imported data is invalid"
+                label = "(imported data is invalid)"
             elif row is not None and row.validImports and not row.processed:
-                label = "*data not yet processed"
+                label = "(data not yet processed)"
             else:
                 label = ""
             self.axis.text(0.95, 0.95, label, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
@@ -106,13 +106,14 @@ class UnmixGraphPanel(AbstractGraphPanel):
             t_xs = [x3]
             t_ys = [y3]
 
+            label_text = "all errors at " + utils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
             if not reconstructedAge.hasMinValue() or not reconstructedAge.hasMaxValue():
                 t_error_xs = []
                 t_error_ys = []
                 x3_error_xs = [[0], [0]]
                 y3_error_ys = [[0], [0]]
                 xlim, ylim = self._calculateMargin(x3, x1 + x1_error, y1 - y1_error, y3)
-                label_text = "*no error bars available"
+                label_text += "\n (no error bars available for reconstructed age)"
                 t3_fmt = "^"
             else:
                 t_min, x3_min, y3_min = reconstructedAge.minValues
@@ -126,7 +127,6 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
                 xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
                 t3_fmt = 'none'
-                label_text = ""
                 # t_label_text = _get_label_text(t, t_min, t_max)
 
         self.axis.set_xlim(*xlim)
@@ -203,11 +203,14 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
         xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
 
+        label_text = "all errors at " + utils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
+
         self.axis.errorbar(xs, ys, xerr=xs_error, yerr=ys_error, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
         self.axis.errorbar(bad_xs, bad_ys, fmt='^', color=config.COLOUR_RECONSTRUCTED_AGE)
 
         self.axis.set_xlim(*xlim)
         self.axis.set_ylim(*ylim)
+        self.axis.text(0.95, 0.95, label_text, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
 
     def _calculateMargin(self, xmin, xmax, ymin, ymax):
         xmargin = xmax * 0.1

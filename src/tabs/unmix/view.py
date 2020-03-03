@@ -1,5 +1,5 @@
 from model.settings import Settings
-from tabs.abstract.abstractView import AbstractView
+from tabs.abstract.view import AbstractView
 from tabs.type import TabType, SettingsType
 from tabs.unmix.graphPanel import UnmixGraphPanel
 from tabs.unmix.dataPanel import UnmixDataPanel

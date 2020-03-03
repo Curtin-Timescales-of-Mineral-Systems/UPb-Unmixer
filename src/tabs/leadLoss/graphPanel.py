@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
-from tabs.abstract.abstractGraphPanel import AbstractGraphPanel
+from tabs.abstract.graphPanel import AbstractGraphPanel
 
 import matplotlib
 

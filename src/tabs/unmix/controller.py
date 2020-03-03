@@ -1,7 +1,6 @@
 import csv_mode
-from model.async import AsyncTask
 from model.settings import Settings
-from tabs.abstract.abstractTabController import AbstractTabController
+from tabs.abstract.controller import AbstractTabController
 from tabs.type import TabType, SettingsType
 from tabs.unmix.model import UnmixModel
 from tabs.unmix.view import UnmixView
@@ -11,11 +10,11 @@ class UnmixTabController(AbstractTabController):
     def __init__(self, application):
         super().__init__(TabType.UNMIX, application)
 
-        self.name = "Unmix"
+        self.name = "Unmix rim/core"
         self.view = UnmixView(self)
         self.model = UnmixModel(self.view)
 
-        self.cheatLoad()
+        #self.cheatLoad()
 
     ################
     ## CSV export ##

@@ -119,6 +119,9 @@ venv.bak/
 # Rope project settingsDialogs
 .ropeproject
 
+# Pycharm
+.idea/*
+
 # mkdocs documentation
 /site
 

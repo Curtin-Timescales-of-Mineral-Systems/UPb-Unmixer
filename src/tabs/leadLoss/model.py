@@ -4,7 +4,7 @@ from model import errors, calculations
 
 from scipy import stats
 
-from tabs.abstract.abstractModel import AbstractRow, ColumnSpec, CalculatedCell, UncalculatedCell, AbstractModel
+from tabs.abstract.model import AbstractRow, ColumnSpec, CalculatedCell, UncalculatedCell, AbstractModel
 from tabs.leadLoss.settings.calculation import LeadLossCalculationSettings
 
 
