@@ -178,30 +178,3 @@ class LeadLossModel(AbstractModel):
 class Row(AbstractRow):
     def __init__(self, importedValues, importSettings):
         super().__init__(importedValues, importSettings, LeadLossModel.getCalculatedColumnSpecs())
-
-        """
-        self.uPbValue = float(importedValues[importSettings.getUPbColumn()])
-        self.uPbError = float(importedValues[importSettings.getUPbErrorColumn()])
-        self.pbPbValue = float(importedValues[importSettings.getPbPbColumn()])
-        self.pbPbError = float(importedValues[importSettings.getPbPbErrorColumn()])
-
-        self.discordance = calculations.discordance(self.uPbValue, self.pbPbValue)
-        self.concordant = self.discordance <= importSettings.discordanceThreshold
-        if self.concordant:
-            self.estimatedAge = calculations.concordant_age(self.uPbValue, self.pbPbValue)
-        else:
-            self.estimatedAge = None
-        """
-
-    """
-    def getDisplayValues(self):
-        columns = Settings.get(TabType.LEAD_LOSS, SettingsType.IMPORT).getPrimaryDataColumns()
-        inputValues = [self.values[i] for i in columns]
-        outputValues = [
-            self.discordance * 100,
-            "" if not self.concordant else self.estimatedAge / (10**6)
-        ]
-        values = inputValues + outputValues
-        roundedValues = [str(utils.round_to_sf(v, 3)) for v in values]
-        return roundedValues
-    """

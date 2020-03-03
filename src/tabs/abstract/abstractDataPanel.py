@@ -49,6 +49,7 @@ class AbstractDataPanel(QGroupBox):
 
         self.exportButton = QPushButton("Export CSV")
         self.exportButton.clicked.connect(self.controller.exportCSV)
+        self.exportButton.setEnabled(False)
 
         self.actionButtonsWidget = QWidget()
         layout = QHBoxLayout()

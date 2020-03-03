@@ -2,7 +2,7 @@ from enum import Enum
 
 import utils
 from model import errors, calculations
-from tabs.abstract.abstractModel import AbstractRow, ColumnSpec, CalculatedCell, AbstractModel
+from tabs.abstract.abstractModel import AbstractRow, ColumnSpec, CalculatedCell, AbstractModel, UncalculatedCell
 from tabs.unmix.settings.calculation import UnmixCalculationSettings
 
 
@@ -44,7 +44,6 @@ class UnmixModel(AbstractModel):
 
     def __init__(self, view):
         super().__init__()
-
         self.rows = None
         self.view = view
 
@@ -71,6 +70,11 @@ class UnmixModel(AbstractModel):
 
     def addProcessingOutput(self, *args):
         pass
+
+    def getExportData(self, calculationSettings):
+        headers = self.headers + calculationSettings.getHeaders()
+        rows = [[cell.value for cell in row.importedCells + row.calculatedCells] for row in self.rows]
+        return headers, rows
 
 class Row(AbstractRow):
     def __init__(self, importedValues, importSettings):
@@ -139,34 +143,29 @@ class Row(AbstractRow):
         self.reconstructedAgeObj = calculations.discordant_age(rimUPb, rimPbPb, mixedUPb, mixedPbPb, calculationSettings.outputErrorSigmas)
 
         self.validOutput = self.reconstructedAgeObj is not None
-
         if not self.validOutput:
-            self.calculatedCells = [CalculatedCell(None) for _ in range(9)]
             return
 
-        self.reconstructedAge = self.reconstructedAgeObj.values[0] / (10 ** 6)
-        self.reconstructedUPb = self.reconstructedAgeObj.values[1]
-        self.reconstructedPbPb = self.reconstructedAgeObj.values[2]
-        self.calculatedCells[0] = CalculatedCell(self.reconstructedAge)
-        self.calculatedCells[3] = CalculatedCell(self.reconstructedUPb)
-        self.calculatedCells[6] = CalculatedCell(self.reconstructedPbPb)
+        self.validOutput = self.reconstructedAgeObj.hasMinValue() and self.reconstructedAgeObj.hasMaxValue()
 
-        if not self.reconstructedAgeObj.hasMinValue():
-            self.validOutput = False
-        else:
-            self.minReconstructedAge = self.reconstructedAgeObj.minValues[0] / (10 ** 6)
-            self.maxReconstructedUPb = self.reconstructedAgeObj.minValues[1]
-            self.minReconstructedPbPb = self.reconstructedAgeObj.minValues[2]
-            self.calculatedCells[1] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedAge, self.reconstructedAge - self.minReconstructedAge))
-            self.calculatedCells[5] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedUPb, self.maxReconstructedUPb - self.reconstructedUPb))
-            self.calculatedCells[7] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedPbPb, self.reconstructedPbPb - self.minReconstructedPbPb))
+        t, t_min, t_max = self.reconstructedAgeObj.getAge()
+        u, u_min, u_max = self.reconstructedAgeObj.getUPb()
+        p, p_min, p_max = self.reconstructedAgeObj.getPbPb()
 
-        if not self.reconstructedAgeObj.hasMaxValue():
-            self.validOutput = False
-        else:
-            self.maxReconstructedAge = self.reconstructedAgeObj.maxValues[0] / (10 ** 6)
-            self.minReconstructedUPb = self.reconstructedAgeObj.maxValues[1]
-            self.maxReconstructedPbPb = self.reconstructedAgeObj.maxValues[2]
-            self.calculatedCells[2] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedAge, self.maxReconstructedAge - self.reconstructedAge))
-            self.calculatedCells[4] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedUPb, self.reconstructedUPb - self.minReconstructedUPb))
-            self.calculatedCells[8] = CalculatedCell(calculationSettings.getOutputError(self.reconstructedPbPb, self.maxReconstructedPbPb - self.reconstructedPbPb))
+        def getErrorCell(value, error):
+            if error is None:
+                return UncalculatedCell()
+            else:
+                return CalculatedCell(calculationSettings.getOutputError(value, error))
+
+        self.calculatedCells[0] = CalculatedCell(t)
+        self.calculatedCells[1] = getErrorCell(t, t_min)
+        self.calculatedCells[2] = getErrorCell(t, t_max)
+
+        self.calculatedCells[3] = CalculatedCell(u)
+        self.calculatedCells[4] = getErrorCell(u, u_min)
+        self.calculatedCells[5] = getErrorCell(u, u_max)
+
+        self.calculatedCells[6] = CalculatedCell(p)
+        self.calculatedCells[7] = getErrorCell(p, p_min)
+        self.calculatedCells[8] = getErrorCell(p, p_max)

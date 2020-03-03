@@ -26,12 +26,13 @@ class UnmixTabController(AbstractTabController):
         if not outputFile:
             return
 
-        headers = self.rawHeaders + self.model.settings.getOutputDataHeaders()
+        self.view.startTask("Exporting CSV file")
 
-        self.view.startTask("Exporting CSV file", False)
+        settings = Settings.get(TabType.UNMIX, SettingsType.CALCULATION)
+        headers, rows = self.model.getExportData(settings)
 
         try:
-            csv_mode.write_output(headers, self.rows, outputFile)
+            csv_mode.write_output(headers, rows, outputFile)
             self.view.endTask(True, "Successfully exported CSV file")
         except Exception as e:
             self.view.endTask(False, "Failed to export CSV file")

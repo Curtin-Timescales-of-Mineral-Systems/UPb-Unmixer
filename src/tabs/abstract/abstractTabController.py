@@ -56,7 +56,9 @@ class AbstractTabController():
         importSettings = Settings.get(self.tabType, SettingsType.IMPORT)
         calculationSettings = Settings.get(self.tabType, SettingsType.CALCULATION)
         headers = importSettings.getHeaders() + calculationSettings.getHeaders()
+        self.model.resetCalculations()
         self.view.onHeadersUpdated(headers)
+        self.view.onAllRowsUpdated(self.model.rows)
 
         self._process(processingSettings)
 
@@ -79,7 +81,6 @@ class AbstractTabController():
     def cancelProcessing(self):
         if self.worker is not None:
             self.worker.halt()
-        super().onProcessingCancelled()
 
     ############
     ## Export ##

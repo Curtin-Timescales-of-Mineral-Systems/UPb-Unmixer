@@ -48,7 +48,7 @@ class GUI(QDialog):
         tabWidget = QTabWidget()
         for subController in controller.subControllers:
             tabWidget.addTab(subController.view, subController.name)
-        tabWidget.setCurrentWidget(controller.subControllers[1].view)
+        tabWidget.setCurrentWidget(controller.subControllers[0].view)
         layout = QHBoxLayout()
         layout.addWidget(tabWidget)
         self.setLayout(layout)

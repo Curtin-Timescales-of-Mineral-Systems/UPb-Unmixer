@@ -65,6 +65,10 @@ class AbstractModel:
     def updateRow(self, i, row):
         self.rows[i] = row
 
+    def resetCalculations(self):
+        for row in self.rows:
+            row.resetCalculatedCells()
+
 
 class AbstractRow:
 
@@ -72,12 +76,13 @@ class AbstractRow:
         self.rawImportedValues = importedValues
         self.calculatedValues = None
         self.processed = False
+        self.calculatedCellSpecs = calculatedCellSpecs
 
         displayedImportedColumns = importSettings.getDisplayColumns()
         self.importedCells = [ImportedCell(importedValues[i]) for _, i in displayedImportedColumns]
         self.importedCellsByCol = {col:self.importedCells[j] for j, (col, _) in enumerate(displayedImportedColumns)}
-        self.calculatedCells = [UncalculatedCell() for _ in calculatedCellSpecs]
         self.validImports = all(cell.isValid() for cell in self.importedCells)
+        self.resetCalculatedCells()
 
     def setCalculatedValues(self, calculatedValues):
         self.calculatedValues = calculatedValues
@@ -87,3 +92,7 @@ class AbstractRow:
 
     def getDisplayCells(self):
         return self.importedCells + self.calculatedCells
+
+    def resetCalculatedCells(self):
+        self.calculatedCells = [UncalculatedCell() for _ in self.calculatedCellSpecs]
+        self.processed = False

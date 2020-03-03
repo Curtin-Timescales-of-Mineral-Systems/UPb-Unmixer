@@ -27,7 +27,7 @@ def write_output(headers, rows, output_file):
         writer = csv.writer(csvfile, delimiter=CSV_DELIMITER, quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(headers)
         for row in rows:
-            writer.writerow(row.inputValues + row.outputValues)
+            writer.writerow(row)
 
 
 def perform_all_calculations(headers, rows, figure_dir, progress_callback):

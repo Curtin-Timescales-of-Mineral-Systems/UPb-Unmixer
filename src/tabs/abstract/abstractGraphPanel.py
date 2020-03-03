@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QGroupBox
 
 from model import calculations
 import numpy as np
+import matplotlib.pyplot as plt
 
 class AbstractGraphPanel(QGroupBox):
 

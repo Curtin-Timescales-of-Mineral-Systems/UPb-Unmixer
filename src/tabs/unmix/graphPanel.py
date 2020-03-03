@@ -31,6 +31,7 @@ class UnmixGraphPanel(AbstractGraphPanel):
         fig, self.axis = plt.subplots()
         plt.xlim(*self._default_xlim)
         plt.ylim(*self._default_ylim)
+        plt.tight_layout(rect=[0.05, 0.08, 1, 0.95])
 
         self._setupConcordiaPlot(self.axis)
 
@@ -60,6 +61,15 @@ class UnmixGraphPanel(AbstractGraphPanel):
         if row is None or not row.validImports or not row.processed:
             self.axis.set_xlim(*self._default_xlim)
             self.axis.set_ylim(*self._default_ylim)
+
+            label = ""
+            if row is not None and not row.validImports and row.processed:
+                label = "*imported data is invalid"
+            elif row is not None and row.validImports and not row.processed:
+                label = "*data not yet processed"
+            else:
+                label = ""
+            self.axis.text(0.95, 0.95, label, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
             return
 
         x1 = row.rimUPbValue
@@ -99,11 +109,11 @@ class UnmixGraphPanel(AbstractGraphPanel):
             if not reconstructedAge.hasMinValue() or not reconstructedAge.hasMaxValue():
                 t_error_xs = []
                 t_error_ys = []
-                x3_error_xs = [None, None]
-                y3_error_ys = [None, None]
-                xlim = self._default_xlim
-                ylim = self._default_ylim
-                # t_label_text = _get_label_text(t, None, None)
+                x3_error_xs = [[0], [0]]
+                y3_error_ys = [[0], [0]]
+                xlim, ylim = self._calculateMargin(x3, x1 + x1_error, y1 - y1_error, y3)
+                label_text = "*no error bars available"
+                t3_fmt = "^"
             else:
                 t_min, x3_min, y3_min = reconstructedAge.minValues
                 t_max, x3_max, y3_max = reconstructedAge.maxValues
@@ -114,7 +124,9 @@ class UnmixGraphPanel(AbstractGraphPanel):
                 t_error_xs = [calculations.u238pb206_from_age(t) for t in ts]
                 t_error_ys = [calculations.pb207pb206_from_age(t) for t in ts]
 
-                xlim, ylim = self._calculateMargin(x3_max, x1 + x1_error, y1 - y1_error, y3_max)
+                xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
+                t3_fmt = 'none'
+                label_text = ""
                 # t_label_text = _get_label_text(t, t_min, t_max)
 
         self.axis.set_xlim(*xlim)
@@ -129,8 +141,9 @@ class UnmixGraphPanel(AbstractGraphPanel):
         # Reconstructed age error line
         self.axis.plot(t_error_xs, t_error_ys, color=config.COLOUR_RECONSTRUCTED_AGE, linewidth=2)[0]
         # Reconstructed age xy points
-        self.axis.errorbar(t_xs, t_ys, xerr=x3_error_xs, yerr=y3_error_ys, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
+        self.axis.errorbar(t_xs, t_ys, xerr=x3_error_xs, yerr=y3_error_ys, fmt=t3_fmt, color=config.COLOUR_RECONSTRUCTED_AGE)
         # Text
+        self.axis.text(0.95, 0.95, label_text, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
         #plt.text(12, 0.4, t_label_text)
 
 
@@ -142,6 +155,8 @@ class UnmixGraphPanel(AbstractGraphPanel):
         xs_error_max = []
         ys_error_min = []
         ys_error_max = []
+        bad_xs = []
+        bad_ys = []
 
         xmax, xmin = self._default_xlim
         ymax, ymin = self._default_ylim
@@ -152,22 +167,21 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
             reconstructedAge = row.reconstructedAgeObj
             (t, x3, y3) = reconstructedAge.values
-            xs += [x3]
-            ys += [y3]
 
             if not reconstructedAge.hasMinValue() or not reconstructedAge.hasMaxValue():
-                xs_error_min += [None]
-                xs_error_max += [None]
-                ys_error_min += [None]
-                ys_error_max += [None]
+                bad_xs += [x3]
+                bad_ys += [y3]
 
                 xmin = min(xmin, x3)
                 xmax = max(xmax, x3)
                 ymin = min(ymin, y3)
-                ymax = max(ymax, x3)
+                ymax = max(ymax, y3)
             else:
                 t_min, x3_min, y3_min = reconstructedAge.minValues
                 t_max, x3_max, y3_max = reconstructedAge.maxValues
+
+                xs += [x3]
+                ys += [y3]
 
                 xs_error_min += [x3 - x3_min]
                 xs_error_max += [x3_max - x3]
@@ -181,10 +195,16 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
         xs_error = xs_error_min, xs_error_max
         ys_error = ys_error_min, ys_error_max
-        print(xmin, xmax, ymin, ymax)
+
+        if (xmax, xmin) == self._default_xlim:
+            xmin, xmax = self._default_xlim
+        if (ymax, ymin) == self._default_ylim:
+            ymin, ymax = self._default_ylim
+
         xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
 
         self.axis.errorbar(xs, ys, xerr=xs_error, yerr=ys_error, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
+        self.axis.errorbar(bad_xs, bad_ys, fmt='^', color=config.COLOUR_RECONSTRUCTED_AGE)
 
         self.axis.set_xlim(*xlim)
         self.axis.set_ylim(*ylim)
