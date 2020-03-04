@@ -58,23 +58,29 @@ class UnmixModel(AbstractModel):
         self.view.onHeadersUpdated(headers)
         self.view.onAllRowsUpdated(self.rows)
 
-    def process(self, signals, importSettings, calculationSettings):
-        for i, row in enumerate(self.rows):
-            if signals.halt():
-                signals.cancelled()
-                return
-            row.process(importSettings, calculationSettings)
-            signals.progress((i+1)/len(self.rows), i, row)
-        signals.completed(None)
+    def getProcessingFunction(self):
+        return process
 
+    def getProcessingData(self):
+        return self.rows
 
     def addProcessingOutput(self, *args):
         pass
 
     def getExportData(self, calculationSettings):
-        headers = self.headers + calculationSettings.getHeaders()
+        headers = self.headers + calculationSettings.getExportHeaders()
         rows = [[cell.value for cell in row.importedCells + row.calculatedCells] for row in self.rows]
         return headers, rows
+
+
+def process(signals, rows, importSettings, calculationSettings):
+    for i, row in enumerate(rows):
+        if signals.halt():
+            signals.cancelled()
+            return
+        row.process(importSettings, calculationSettings)
+        signals.progress((i+1)/len(rows), i, row)
+    signals.completed(None)
 
 class Row(AbstractRow):
     def __init__(self, importedValues, importSettings):

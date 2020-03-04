@@ -52,8 +52,7 @@ class GUI(QDialog):
         layout.addWidget(tabWidget)
         self.setLayout(layout)
 
-        self.show()
-        #self.showMaximized()
+        self.showMaximized()
 
 if __name__ == '__main__':
     controller = Controller()

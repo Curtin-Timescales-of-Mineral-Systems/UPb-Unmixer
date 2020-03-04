@@ -35,6 +35,7 @@ class UnmixTabController(AbstractTabController):
             self.view.endTask(True, "Successfully exported CSV file")
         except Exception as e:
             self.view.endTask(False, "Failed to export CSV file")
+            raise e
 
     ################
     ## Processing ##

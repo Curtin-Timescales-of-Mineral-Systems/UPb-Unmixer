@@ -17,6 +17,16 @@ SAVE_FILE = "../concordia_save_data.pkl"
 ## Functions ##
 ###############
 
+def getUPbStr(useSuperscripts):
+    if useSuperscripts:
+        return U_PB_STR
+    return "238U/206Pb"
+
+def getPbPbStr(useSuperscripts):
+    if useSuperscripts:
+        return PB_PB_STR
+    return "207Pb/206Pb"
+
 def print_warning(message):
     print("\033[93m" + message + "\033[0m")
 

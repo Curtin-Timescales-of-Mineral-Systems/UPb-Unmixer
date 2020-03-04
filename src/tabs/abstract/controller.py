@@ -68,7 +68,7 @@ class AbstractTabController:
         self.signals.completed.connect(self.onProcessingCompleted)
 
         importSettings = Settings.get(self.tabType, SettingsType.IMPORT)
-        self.worker = AsyncTask(self.signals, self.model.process, importSettings, calculationSettings)
+        self.worker = AsyncTask(self.signals, self.model.getProcessingFunction(), self.model.getProcessingData(), importSettings, calculationSettings)
         self.worker.start()
 
     def onProcessingCompleted(self, output):

@@ -15,9 +15,12 @@ class SignalType(Enum):
     CANCELLED = 4,
     ERRORED = 5,
 
+
 """
 An object that the child process uses to send information to the PyQT thread
 """
+
+
 class ProcessSignals():
     def __init__(self):
         self.queue = Queue()
@@ -41,15 +44,28 @@ class ProcessSignals():
     def setHalt(self):
         self._halt.value = 1
 
+
 """
 An object that the PyQT thread uses to receive data from the child process
 """
+
+
 class AsyncPyQTSignals(QObject):
     started = pyqtSignal()
     progress = pyqtSignal(object)
     completed = pyqtSignal(object)
     cancelled = pyqtSignal()
     errored = pyqtSignal(object)
+
+
+# Can't be part of AsyncTask as this function must be picklable under windows:
+# (see https://docs.python.org/2/library/multiprocessing.html#windows)
+def wrappedJobFn(jobFn, processSignals, *args):
+    try:
+        jobFn(processSignals, *args)
+    except Exception as e:
+        traceback.print_exc()
+        processSignals.errored(e)
 
 
 class AsyncTask(QThread):
@@ -71,17 +87,18 @@ class AsyncTask(QThread):
         self.running = True
         self.pyqtSignals.started.emit()
 
-        p = Process(target=self.runJob, args=self.args)
+        p = Process(target=wrappedJobFn, args=(self.jobFn, self.processSignals, *self.args))
         p.start()
         while self.running:
             self._processOutput(self.processSignals.queue.get())
 
-    def runJob(self, *args):
-        try:
-            self.jobFn(self.processSignals, *args)
-        except Exception as e:
-            traceback.print_exc()
-            self.processSignals.errored(e)
+    #
+    # def runJob(self, *args):
+    #     try:
+    #         self.jobFn(self.processSignals, *args)
+    #     except Exception as e:
+    #         traceback.print_exc()
+    #         self.processSignals.errored(e)
 
     def _processOutput(self, output):
         if output[0] is SignalType.PROGRESS:
@@ -113,26 +130,28 @@ class UFloatAsyncTask(QThread):
         super().__init__()
 
         n = multiprocessing.cpu_count()
-        fragments = self._split(inputs,n)
+        fragments = self._split(inputs, n)
 
         def _processUFloatsFn(processSignals, id, inputs):
             outputs = []
             for i, input in enumerate(inputs):
                 if processSignals.halt():
                     return
-                processSignals.progress(i/len(inputs))
+                processSignals.progress(i / len(inputs))
                 value = errors.ufloat(*input)
                 outputs.append(value)
             processSignals.completed(id, outputs)
 
         outputsCount = 0
+
         def progress():
             nonlocal outputsCount
             outputsCount += 1
-            signals.progress.emit(outputsCount/len(inputs))
+            signals.progress.emit(outputsCount / len(inputs))
 
         threadCount = 0
-        outputs = [[] for _  in fragments]
+        outputs = [[] for _ in fragments]
+
         def completed(output):
             nonlocal threadCount, outputs
             threadID, threadOutput = output

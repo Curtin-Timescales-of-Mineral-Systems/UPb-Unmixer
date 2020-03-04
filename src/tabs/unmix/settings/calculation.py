@@ -20,27 +20,30 @@ class UnmixCalculationSettings():
         return (diff / value) * 100.0
 
     @staticmethod
-    def _getHeaders(outputErrorSigmas, outputErrorType):
+    def _getHeaders(outputErrorSigmas, outputErrorType, useSuperscripts):
         outputErrorStr = utils.get_error_str(outputErrorSigmas, outputErrorType)
 
         return [
             "Reconstructed age (Ma)",
             "-" + outputErrorStr,
             "+" + outputErrorStr,
-            "Reconstructed " + utils.U_PB_STR,
+            "Reconstructed " + utils.getUPbStr(useSuperscripts),
             "-" + outputErrorStr,
             "+" + outputErrorStr,
-            "Reconstructed " + utils.PB_PB_STR,
+            "Reconstructed " + utils.getPbPbStr(useSuperscripts),
             "-" + outputErrorStr,
             "+" + outputErrorStr
         ]
 
     def getHeaders(self):
-        return UnmixCalculationSettings._getHeaders(self.outputErrorSigmas, self.outputErrorType)
+        return UnmixCalculationSettings._getHeaders(self.outputErrorSigmas, self.outputErrorType, True)
 
     @staticmethod
     def getDefaultHeaders():
-        return UnmixCalculationSettings._getHeaders(2, "Absolute")
+        return UnmixCalculationSettings._getHeaders(2, "Absolute", True)
+
+    def getExportHeaders(self):
+        return UnmixCalculationSettings._getHeaders(self.outputErrorSigmas, self.outputErrorType, False)
 
     def validate(self):
         return None
