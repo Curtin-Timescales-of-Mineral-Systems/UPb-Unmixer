@@ -2,6 +2,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
+import multiprocessing
+
 from tabs.unmix.controller import UnmixTabController
 from tabs.leadLoss.controller import LeadLossTabController
 
@@ -55,4 +57,8 @@ class GUI(QDialog):
         self.showMaximized()
 
 if __name__ == '__main__':
+    # Necessary for building executable with Pyinstaller correctly on Windows
+    # (see https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing)
+    multiprocessing.freeze_support()
+
     controller = Controller()

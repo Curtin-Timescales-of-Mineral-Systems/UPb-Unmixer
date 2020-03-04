@@ -1,4 +1,4 @@
-![alt text](resources/logo.png)
+![Curtin University: Timescales of Minerals Systems](resources/logo.png)
 
 ## Unmixing concordia 
 
