@@ -1,6 +1,9 @@
-## Unmixing concordia
+![alt text](resources/logo.png)
+
+## Unmixing concordia 
 
 ![Building](https://github.com/MatthewDaggitt/CurtinConcordia/workflows/Build%20Python%20executable/badge.svg)
+
 
 This is a Python program accompanying the paper "Unmixing U-Pb ages from core-rim mixtures". 
 
