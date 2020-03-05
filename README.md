@@ -1,11 +1,12 @@
-![Curtin University: Timescales of Minerals Systems](resources/logo.png)
+![Curtin University: Timescales of Minerals Systems](resources/logo-linear.png)
 
-## Unmixing concordia 
+This repository contains various Python applications for the analysis of UPb ratios using concordia plots.
+## U-Pb Unmixer
 
 ![Building](https://github.com/MatthewDaggitt/CurtinConcordia/workflows/Build%20Python%20executable/badge.svg)
 
 
-This is a Python program accompanying the paper "Unmixing U-Pb ages from core-rim mixtures". 
+This program accompanying the paper "Unmixing U-Pb ages from core-rim mixtures". 
 
 #### Standalone executables
 

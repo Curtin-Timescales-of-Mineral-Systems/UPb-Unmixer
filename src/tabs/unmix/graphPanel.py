@@ -33,6 +33,8 @@ class UnmixGraphPanel(AbstractGraphPanel):
         plt.xlim(*self._default_xlim)
         plt.ylim(*self._default_ylim)
         plt.tight_layout(rect=[0.05, 0.08, 1, 0.95])
+        self.axis.spines['top'].set_visible(False)
+        self.axis.spines['right'].set_visible(False)
 
         self._setupConcordiaPlot(self.axis)
 
@@ -161,10 +163,12 @@ class UnmixGraphPanel(AbstractGraphPanel):
         xmax, xmin = self._default_xlim
         ymax, ymin = self._default_ylim
 
+        anyRows = False
         for row in rows:
             if not row.validImports or not row.processed or row.reconstructedAgeObj is None:
                 continue
 
+            anyRows = True
             reconstructedAge = row.reconstructedAgeObj
             (t, x3, y3) = reconstructedAge.values
 
@@ -196,12 +200,10 @@ class UnmixGraphPanel(AbstractGraphPanel):
         xs_error = xs_error_min, xs_error_max
         ys_error = ys_error_min, ys_error_max
 
-        if (xmax, xmin) == self._default_xlim:
-            xmin, xmax = self._default_xlim
-        if (ymax, ymin) == self._default_ylim:
-            ymin, ymax = self._default_ylim
-
-        xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
+        if anyRows:
+            xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
+        else:
+            xlim, ylim = self._default_xlim, self._default_ylim
 
         label_text = "all errors at " + utils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
 
