@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QPixmap, QDesktopServices, QCursor
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
@@ -16,6 +17,12 @@ class StatusBarWidget(QWidget):
         self.icon = QLabel()
         self._setIcon(False)
 
+        logoPix = QPixmap("resources/logo-linear.png", )
+        logo = QLabel("<a href=\"http://example.com/\">Click Here!</a>")
+        logo.setPixmap(logoPix)
+        logo.setCursor(QCursor(Qt.PointingHandCursor))
+        logo.mouseReleaseEvent = self.openLink
+
         self.progressBar = QProgressBar()
         self.progressBar.setGeometry(30, 40, 200, 25)
         self.progressBar.hide()
@@ -23,6 +30,7 @@ class StatusBarWidget(QWidget):
         utils.retainSize(self.progressBar)
 
         layout = QHBoxLayout()
+        layout.addWidget(logo)
         layout.addWidget(self.progressBar)
         layout.addSpacing(10)
         layout.addWidget(self.icon)
@@ -52,3 +60,7 @@ class StatusBarWidget(QWidget):
         style = "SP_DialogApplyButton" if success else "SP_BrowserStop"
         icon = self.style().standardIcon(getattr(QStyle, style))
         self.icon.setPixmap(icon.pixmap(QSize(20, 20)))
+
+
+    def openLink(self, e):
+        QDesktopServices.openUrl(QUrl("https://github.com/Curtin-Timescales-of-Mineral-Systems/ConcordiaApplications"))

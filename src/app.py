@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import *
 
 import multiprocessing
@@ -42,16 +42,18 @@ class GUI(QDialog):
         self.width = 1220
         self.height = 500
 
-        self.setWindowTitle('Concordia ' + "(v" + VERSION + ")")
+        self.setWindowTitle('U-Pb Unmixer ' + "(v" + VERSION + ")")
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setWindowFlags(self.windowFlags() & Qt.WindowMaximizeButtonHint)
 
+        """
         tabWidget = QTabWidget()
         for subController in controller.subControllers:
             tabWidget.addTab(subController.view, subController.name)
         tabWidget.setCurrentWidget(controller.subControllers[0].view)
-        layout = QHBoxLayout()
-        layout.addWidget(tabWidget)
+        """
+        layout = QVBoxLayout()
+        layout.addWidget(controller.subControllers[0].view)
         self.setLayout(layout)
 
         self.showMaximized()

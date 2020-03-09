@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: U-Pb Unmixer ${{ github.ref }}
           draft: false
           prerelease: false
 
@@ -41,20 +41,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest] # , macos-latest,
+        os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-          #- os: macos-latest
-          #  OS_NAME: macOS
+          - os: macos-latest
+            OS_NAME: macOS
+            PYTHON_VERSION: 3.6.10
+            EXTENSION:
 
           - os: ubuntu-latest
             OS_NAME: ubuntu
             PYTHON_VERSION: 3.6.10
-            EXECUTABLE_NAME: app
+            EXTENSION:
 
           - os: windows-latest
             OS_NAME: windows
             PYTHON_VERSION: 3.6.8
-            EXECUTABLE_NAME: app.exe
+            EXTENSION: .exe
 
     steps:
       - name: Check out code
@@ -110,7 +112,7 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ./dist/${{matrix.EXECUTABLE_NAME}}
-          asset_name: ${{ steps.get_version.outputs.version }}-${{ matrix.OS_NAME }}-${{matrix.EXECUTABLE_NAME}}
+          asset_name: U-Pb Unmixer-${{ steps.get_version.outputs.version }}-${{ matrix.OS_NAME }}-${{matrix.EXTENSION}}
           asset_content_type: application/zip
 
   delete-artifacts:
