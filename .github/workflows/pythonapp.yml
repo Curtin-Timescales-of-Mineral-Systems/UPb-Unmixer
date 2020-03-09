@@ -100,12 +100,7 @@ jobs:
       - name: Build with pyinstaller
         shell: bash
         run: |
-          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --log-level DEBUG src/app.py
-
-#      - name: Zip artifacts
-#        uses: montudor/action-zip@v0.1.0
-#        with:
-#          args: zip -qq -r ./release-${{matrix.OS_NAME}}.zip ./dist
+          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --icon=resources/icon.png src/app.py
 
       - name: Upload release asset
         id: upload-release-asset
