@@ -1,4 +1,4 @@
-import model.calculations as calculations
+import utils.calculations as calculations
 
 
 def getCSVLine(x, y):
