@@ -7,8 +7,8 @@ import utils.errorUtils as errors
 ###############
 from utils.reconstructedAge import ReconstructedAge
 
-U238_DECAY_CONSTANT = 1.54*(10**-10)
-U235_DECAY_CONSTANT = 9.72*(10**-10)
+U238_DECAY_CONSTANT = 1.55125*(10**-10)
+U235_DECAY_CONSTANT = 9.8485*(10**-10)
 U238U235_RATIO = 137.818
 
 ################
