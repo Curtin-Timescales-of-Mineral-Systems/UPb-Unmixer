@@ -1,4 +1,3 @@
-import self as self
 from PyQt5.QtWidgets import QWidget, QGridLayout, QRadioButton, QButtonGroup
 
 from utils import stringUtils
