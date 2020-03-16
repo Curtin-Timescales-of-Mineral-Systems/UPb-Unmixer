@@ -8,7 +8,7 @@ from PyQt5.QtCore import QRegExp
 U_PB_STR = "²³⁸U/²⁰⁶Pb"
 PB_PB_STR = "²⁰⁷Pb/²⁰⁶Pb"
 
-SIGMA_OPTIONS = [2, 1]
+ERROR_SIGMA_OPTIONS = [2, 1]
 ERROR_TYPE_OPTIONS = ["Absolute", "Percentage"]
 DISCORDANCE_OPTIONS = ["Percentages", "Error ellipse"]
 
@@ -62,9 +62,3 @@ def error_symbol(type, brackets=False):
     if brackets:
         return "(%)"
     return "%"
-
-###########
-## Other ##
-###########
-
-SIGMA_OPTIONS_STR = [get_error_sigmas_str(o) for o in SIGMA_OPTIONS]

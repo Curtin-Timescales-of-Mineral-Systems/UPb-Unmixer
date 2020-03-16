@@ -22,7 +22,7 @@ class AbstractApplication:
 
         app = QApplication(sys.argv)
         app.setStyle(QStyleFactory.create('Fusion'))
-        app.setWindowIcon(QIcon("resources/icon.png"))
+        app.setWindowIcon(QIcon(self.getIcon()))
 
         self.mainWindow = GUI(self)
         sys.exit(app.exec_())

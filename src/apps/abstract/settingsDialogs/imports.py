@@ -4,7 +4,9 @@ from PyQt5.QtWidgets import *
 from utils import stringUtils
 from utils.ui import uiUtils
 from apps.abstract.settingsDialogs.general import AbstractSettingsDialog
-from utils.ui.columnReference import ColumnReferenceInput, ColumnReferenceTypeInput
+from utils.ui.columnReferenceInput import ColumnReferenceInput
+from utils.ui.columnReferenceTypeInput import ColumnReferenceTypeInput
+from utils.ui.errorTypeInput import ErrorTypeInput
 from utils.ui.radioButtonGroup import RadioButtonGroup
 
 
@@ -62,20 +64,18 @@ class GeneralSettingsWidget(QGroupBox):
 class ImportedValueErrorWidget(QGroupBox):
     width = 30
 
-    def __init__(self, title, validation, defaultReferenceType, defaultValueColumn, defaultErrorColumn, defaultSigmas, defaultErrors):
+    def __init__(self, title, validation, defaultReferenceType, defaultValueColumn, defaultErrorColumn, defaultErrorType, defaultErrorSigmas):
         super().__init__(title)
 
         self._valueColumn = ColumnReferenceInput(validation, defaultReferenceType, defaultValueColumn)
         self._errorColumn = ColumnReferenceInput(validation, defaultReferenceType, defaultErrorColumn)
-        self._errorType = RadioButtonGroup(stringUtils.ERROR_TYPE_OPTIONS, validation, defaultErrors)
-        self._errorSigmas = RadioButtonGroup(stringUtils.SIGMA_OPTIONS_STR, validation, defaultSigmas)
+        self._errorType = ErrorTypeInput(validation, defaultErrorType, defaultErrorSigmas)
 
         layout = QFormLayout()
         layout.setHorizontalSpacing(uiUtils.FORM_HORIZONTAL_SPACING)
         layout.addRow("Value column", self._valueColumn)
         layout.addRow("Error column", self._errorColumn)
         layout.addRow("Error type", self._errorType)
-        layout.addRow("Error sigmas", self._errorSigmas)
         self.setLayout(layout)
 
     def getValueColumn(self):
@@ -85,10 +85,10 @@ class ImportedValueErrorWidget(QGroupBox):
         return self._errorColumn.text()
 
     def getErrorType(self):
-        return self._errorType.getSelection()
+        return self._errorType.getErrorType()
 
     def getErrorSigmas(self):
-        return self._errorSigmas.getSelection()
+        return self._errorType.getErrorSigmas()
 
     def changeColumnReferenceType(self, newReferenceType):
         self._valueColumn.changeColumnReferenceType(newReferenceType)

@@ -48,18 +48,20 @@ def columnLettersToNumber(letters, zeroIndexed):
         letters = letters.replace(" ", "")
         number = 0
         for i, char in enumerate(letters):
-            number += _letterToNumber(char) * (26 ** (len(letters) - i - 1))
+            digit = _letterToNumber(char)
+            exponent = len(letters) - i - 1
+            number += digit * (26 ** exponent)
     if zeroIndexed:
         number -= 1
     return number
 
 
 def _letterToNumber(letter):
-    return ord(letter) - 65
+    return ord(letter) - 64
 
 
 def _numberToLetter(number):
-    return chr(number + 65)
+    return chr(number + 64)
 
 
 #########################

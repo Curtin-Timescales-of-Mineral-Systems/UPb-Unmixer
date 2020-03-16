@@ -11,19 +11,25 @@ class UnmixImportSettings(AbstractImportSettings):
     def __init__(self):
         super().__init__(UnmixModel.getImportedColumnSpecs())
 
-        self.rimAgeErrorSigmas = 2
         self.rimAgeErrorType = "Absolute"
+        self.rimAgeErrorSigmas = 2
 
-        self.mixedPointErrorSigmas = 2
-        self.mixedPointErrorType = "Absolute"
+        self.mixedUPbErrorType = "Absolute"
+        self.mixedUPbErrorSigmas = 2
+
+        self.mixedPbPbErrorType = "Absolute"
+        self.mixedPbPbErrorSigmas = 2
 
     ## Error getters ##
 
     def getRimAgeErrorStr(self):
         return stringUtils.get_error_str(self.rimAgeErrorSigmas, self.rimAgeErrorType)
 
-    def getMixedPointErrorStr(self):
-        return stringUtils.get_error_str(self.mixedPointErrorSigmas, self.mixedPointErrorType)
+    def getMixedUPbErrorStr(self):
+        return stringUtils.get_error_str(self.mixedUPbErrorSigmas, self.mixedUPbErrorType)
+
+    def getMixedPbPbErrorStr(self):
+        return stringUtils.get_error_str(self.mixedPbPbErrorSigmas, self.mixedPbPbErrorType)
 
     ## Headers ##
 
@@ -32,9 +38,9 @@ class UnmixImportSettings(AbstractImportSettings):
             "Rim age (Ma)",
             "±" + self.getRimAgeErrorStr(),
             "Mixed " + stringUtils.U_PB_STR,
-            "±" + self.getMixedPointErrorStr(),
+            "±" + self.getMixedUPbErrorStr(),
             "Mixed " + stringUtils.PB_PB_STR,
-            "±" + self.getMixedPointErrorStr()
+            "±" + self.getMixedPbPbErrorStr()
         ]
 
     ## Validation ##

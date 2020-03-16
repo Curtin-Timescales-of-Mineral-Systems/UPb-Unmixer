@@ -1,8 +1,10 @@
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
 from apps.abstract.graphPanel import AbstractGraphPanel
 
 import matplotlib
+
 matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvas
@@ -19,11 +21,17 @@ class UnmixGraphPanel(AbstractGraphPanel):
     _default_ylim = (0, 0.6)
 
     def __init__(self, controller, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__("Concordia plot", *args, **kwargs)
 
-        layout = QFormLayout()
-        layout.addRow(self.createGraph())
-        self.setLayout(layout)
+    def createCitation(self):
+        label = QLabel(
+            "Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham, Matthew L. Daggitt, Julie Hollis, Michael Hartnady "
+            "<b>Unmixing U-Pb ages from core–rim mixtures</b>, 2020"
+        )
+        label.setWordWrap(True)
+        label.setTextFormat(Qt.RichText)
+        label.setTextInteractionFlags(Qt.TextSelectableByMouse);
+        return label
 
     def createGraph(self):
         widget = QWidget()
@@ -64,10 +72,10 @@ class UnmixGraphPanel(AbstractGraphPanel):
             self.axis.set_xlim(*self._default_xlim)
             self.axis.set_ylim(*self._default_ylim)
 
-            if row is not None and not row.validImports and row.processed:
-                label = "(imported data is invalid)"
-            elif row is not None and row.validImports and not row.processed:
+            if row is not None and not row.processed:
                 label = "(data not yet processed)"
+            elif row is not None and not row.validImports:
+                label = "(imported data is invalid)"
             else:
                 label = ""
             self.axis.text(0.95, 0.95, label, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
@@ -204,7 +212,10 @@ class UnmixGraphPanel(AbstractGraphPanel):
         else:
             xlim, ylim = self._default_xlim, self._default_ylim
 
-        label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
+        if not any(row.processed for row in rows):
+            label_text = "(data not yet processed)"
+        else:
+            label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
 
         self.axis.errorbar(xs, ys, xerr=xs_error, yerr=ys_error, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
         self.axis.errorbar(bad_xs, bad_ys, fmt='^', color=config.COLOUR_RECONSTRUCTED_AGE)

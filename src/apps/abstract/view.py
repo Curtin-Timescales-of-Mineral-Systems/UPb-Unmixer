@@ -20,7 +20,7 @@ class AbstractView(QWidget):
         splitter.addWidget(self.dataPanel)
         splitter.addWidget(self.graphPanel)
         splitter.setSizes([10000, 10000])
-        #splitter.setContentsMargins(10, 10, 10, 10)
+        splitter.setContentsMargins(1, 1, 1, 1)
 
         layout = QVBoxLayout()
         layout.addWidget(splitter, 1)

@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 
 from utils import stringUtils
 from utils.ui import uiUtils
+from utils.ui.radioButtonGroup import RadioButtonGroup
 
 
 class AbstractSettingsDialog(QDialog):
@@ -35,23 +36,6 @@ class AbstractSettingsDialog(QDialog):
         widget = QWidget()
         widget.setLayout(layout)
         return widget
-
-    ###########
-    ## Utils ##
-    ###########
-
-    def _createErrorRow(self, defaultSigmas, defaultType):
-        sigmaDefault = stringUtils.get_error_sigmas_str(defaultSigmas)
-        sigmasRB, sigmasRBLayout = self._createRadioButtons(stringUtils.SIGMA_OPTIONS_STR, sigmaDefault)
-        typeRB, typeRBLayout = self._createRadioButtons(stringUtils.ERROR_TYPE_OPTIONS, defaultType)
-
-        layout = QHBoxLayout()
-        layout.addSpacing(20)
-        layout.addLayout(typeRBLayout)
-        layout.addSpacing(30)
-        layout.addLayout(sigmasRBLayout)
-        layout.addStretch(0)
-        return sigmasRB, typeRB, layout
 
     ################
     ## Validation ##

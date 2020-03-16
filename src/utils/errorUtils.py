@@ -45,11 +45,11 @@ def value(x):
 def stddev(x):
     if isinstance(x, float):
         return 0
-    if error_order == 1:
-        return x.std_dev
-    """
     if error_order == 2:
         return math.sqrt(x.var)
+    """
+    if error_order == 1:
+        return x.std_dev
     if error_order == "mc":
         return math.sqrt(x.var)
     """

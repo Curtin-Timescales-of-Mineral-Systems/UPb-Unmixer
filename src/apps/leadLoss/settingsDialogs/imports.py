@@ -61,6 +61,6 @@ class LeadLossImportSettingsDialog(AbstractImportSettingsDialog):
         settings.uPbErrorColumn = self.uPbErrorColumnEntry.text()
         settings.pbPbColumn = self.pbPbColumnEntry.text()
         settings.pbPbErrorColumn = self.pbPbErrorColumnEntry.text()
-        settings.inputErrorSigmas = stringUtils.SIGMA_OPTIONS[self.inputSigmasRB.checkedId()]
+        settings.inputErrorSigmas = stringUtils.ERROR_SIGMA_OPTIONS[self.inputSigmasRB.checkedId()]
         settings.inputErrorType = stringUtils.ERROR_TYPE_OPTIONS[self.inputTypeRB.checkedId()]
         return settings

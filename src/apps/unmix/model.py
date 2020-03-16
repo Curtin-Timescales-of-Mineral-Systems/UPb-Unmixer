@@ -97,7 +97,7 @@ class Row(AbstractRow):
 
         self.rimAgeValue = self.importedCellsByCol[Column.RIM_AGE_VALUE].value
         self.rimAgeRawError = self.importedCellsByCol[Column.RIM_AGE_ERROR].value
-        self.rimAgeStDev = stringUtils.convert_to_stddev(
+        self.rimAgeStDev = calculations.convert_to_stddev(
             self.rimAgeValue,
             self.rimAgeRawError,
             importSettings.rimAgeErrorType,
@@ -107,21 +107,21 @@ class Row(AbstractRow):
 
         self.mixedUPbValue = self.importedCellsByCol[Column.MIXED_U_PB_VALUE].value
         self.mixedUPbRawError = self.importedCellsByCol[Column.MIXED_U_PB_ERROR].value
-        self.mixedUPbStDev = stringUtils.convert_to_stddev(
+        self.mixedUPbStDev = calculations.convert_to_stddev(
             self.mixedUPbValue,
             self.mixedUPbRawError,
-            importSettings.mixedPointErrorType,
-            importSettings.mixedPointErrorSigmas
+            importSettings.mixedUPbErrorType,
+            importSettings.mixedUPbErrorSigmas
         )
         mixedUPb = errorUtils.ufloat(self.mixedUPbValue, self.mixedUPbStDev)
 
         self.mixedPbPbValue = self.importedCellsByCol[Column.MIXED_PB_PB_VALUE].value
         self.mixedPbPbRawError = self.importedCellsByCol[Column.MIXED_PB_PB_ERROR].value
-        self.mixedPbPbStDev = stringUtils.convert_to_stddev(
+        self.mixedPbPbStDev = calculations.convert_to_stddev(
             self.mixedPbPbValue,
             self.mixedPbPbRawError,
-            importSettings.mixedPointErrorType,
-            importSettings.mixedPointErrorSigmas
+            importSettings.mixedPbPbErrorType,
+            importSettings.mixedPbPbErrorSigmas
         )
         mixedPbPb = errorUtils.ufloat(self.mixedPbPbValue, self.mixedPbPbStDev)
 
@@ -130,7 +130,7 @@ class Row(AbstractRow):
 
         self.rimUPbValue = errorUtils.value(rimUPb)
         self.rimUPbStDev = errorUtils.stddev(rimUPb)
-        self.rimUPbError = stringUtils.convert_from_stddev_with_sigmas(
+        self.rimUPbError = calculations.convert_from_stddev_with_sigmas(
             self.rimUPbValue,
             self.rimUPbStDev,
             calculationSettings.outputErrorType,
@@ -138,7 +138,7 @@ class Row(AbstractRow):
         )
         self.rimPbPbValue = errorUtils.value(rimPbPb)
         self.rimPbPbStDev = errorUtils.stddev(rimPbPb)
-        self.rimPbPbError = stringUtils.convert_from_stddev_with_sigmas(
+        self.rimPbPbError = calculations.convert_from_stddev_with_sigmas(
             self.rimPbPbValue,
             self.rimPbPbStDev,
             calculationSettings.outputErrorType,

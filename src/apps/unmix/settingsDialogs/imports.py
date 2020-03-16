@@ -6,7 +6,7 @@ from apps.abstract.settingsDialogs.imports import AbstractImportSettingsDialog, 
     GeneralSettingsWidget
 
 from utils import stringUtils
-from utils.ui.columnReference import ColumnReferenceType
+from utils.ui.columnReferenceInput import ColumnReferenceType
 
 
 class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
@@ -42,8 +42,8 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
             defaults.columnReferenceType,
             columnRefs[Column.MIXED_U_PB_VALUE],
             columnRefs[Column.MIXED_U_PB_ERROR],
-            defaults.mixedPointErrorType,
-            defaults.mixedPointErrorSigmas
+            defaults.mixedUPbErrorType,
+            defaults.mixedUPbErrorSigmas
         )
 
         self._mixedPbPbWidget = ImportedValueErrorWidget(
@@ -52,8 +52,8 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
             defaults.columnReferenceType,
             columnRefs[Column.MIXED_PB_PB_VALUE],
             columnRefs[Column.MIXED_PB_PB_ERROR],
-            defaults.mixedPointErrorType,
-            defaults.mixedPointErrorSigmas
+            defaults.mixedPbPbErrorType,
+            defaults.mixedPbPbErrorSigmas
         )
 
         layout = QGridLayout()
@@ -120,7 +120,9 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
 
         settings.rimAgeErrorType = self._rimAgeWidget.getErrorType()
         settings.rimAgeErrorSigmas = self._rimAgeWidget.getErrorSigmas()
-        settings.mixedPointErrorSigmas = self._mixedPbPbWidget.getErrorType()
-        settings.mixedPointErrorType = self._mixedUPbWidget.getErrorType()
+        settings.mixedUPbErrorType = self._mixedUPbWidget.getErrorType()
+        settings.mixedUPbErrorSigmas = self._mixedUPbWidget.getErrorSigmas()
+        settings.mixedPbPbErrorType = self._mixedPbPbWidget.getErrorType()
+        settings.mixedPbPbErrorSigmas = self._mixedPbPbWidget.getErrorSigmas()
 
         return settings

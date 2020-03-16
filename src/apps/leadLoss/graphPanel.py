@@ -31,10 +31,6 @@ class LeadLossGraphPanel(AbstractGraphPanel):
         super().__init__(*args, **kwargs)
         self.controller = controller
 
-        layout = QFormLayout()
-        layout.addRow(self.createGraph())
-        self.setLayout(layout)
-
         self.mouseOnStatisticsAxes = False
 
     def createGraph(self):

@@ -18,8 +18,10 @@ class AbstractDataPanel(QGroupBox):
 
     def _initImportWidget(self):
 
-        self.importButton = QPushButton("Import CSV")
+        self.importButton = QPushButton("  Import CSV")
         self.importButton.clicked.connect(self.controller.importCSV)
+        self.importButton.setIcon(self.style().standardIcon(QStyle.SP_DialogOpenButton))
+
         self.importFileText = QLineEdit("")
         self.importFileText.setReadOnly(True)
 
@@ -45,17 +47,24 @@ class AbstractDataPanel(QGroupBox):
         return cell
 
     def _initActionButtonsWidget(self):
-        self.processButton = QPushButton("Process")
+        self.processButton = QPushButton("  Process")
         self.processButton.clicked.connect(self.controller.process)
+        self.processButton.setIcon(self.style().standardIcon(QStyle.SP_ArrowForward))
 
-        self.exportButton = QPushButton("Export CSV")
+        self.exportButton = QPushButton("  Export CSV")
         self.exportButton.clicked.connect(self.controller.exportCSV)
         self.exportButton.setEnabled(False)
+        self.exportButton.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
+
+        self.helpButton = QPushButton("  Help")
+        self.helpButton.clicked.connect(self.controller.showHelp)
+        self.helpButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
 
         self.actionButtonsWidget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(self.processButton)
         layout.addWidget(self.exportButton)
+        layout.addWidget(self.helpButton)
         self.actionButtonsWidget.setLayout(layout)
 
     #############
@@ -72,14 +81,16 @@ class AbstractDataPanel(QGroupBox):
         for button in self.getActionButtons():
             button.setEnabled(button == self.processButton)
         self.processButton.setEnabled(True)
-        self.processButton.setText("Cancel processing")
+        self.processButton.setText("  Cancel processing")
+        self.processButton.setIcon(self.style().standardIcon(QStyle.SP_DialogCancelButton))
         self.processButton.clicked.disconnect(self.controller.process)
         self.processButton.clicked.connect(self.controller.cancelProcessing)
 
     def onProcessingEnd(self):
         for button in self.getActionButtons():
             button.setEnabled(True)
-        self.processButton.setText("Process")
+        self.processButton.setText("  Process")
+        self.processButton.setIcon(self.style().standardIcon(QStyle.SP_ArrowForward))
         self.processButton.clicked.disconnect(self.controller.cancelProcessing)
         self.processButton.clicked.connect(self.controller.process)
 

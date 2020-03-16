@@ -1,13 +1,9 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QWidget, QButtonGroup, QHBoxLayout, QRadioButton
-
-from utils.ui import uiUtils
 
 
 class RadioButtonGroup(QWidget):
 
-    def __init__(self, options, validation, default=0):
+    def __init__(self, options, validation, default):
         super().__init__()
 
         self.options = options

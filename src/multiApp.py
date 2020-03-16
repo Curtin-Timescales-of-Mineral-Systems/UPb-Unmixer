@@ -18,6 +18,9 @@ class MultiApplication(AbstractApplication):
     def getVersion(self):
         return " ".join([application.getVersion() for application in self.applications])
 
+    def getIcon(self):
+        return "../resources/icon.png"
+
     def getControllers(self):
         return [application.createController() for application in self.applications]
 

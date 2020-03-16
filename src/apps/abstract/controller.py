@@ -11,7 +11,6 @@ class AbstractTabController:
         self.worker = None
 
         self.signals = AsyncPyQTSignals()
-        self.signals.started.connect(self.onProcessingStart)
         self.signals.cancelled.connect(self.onProcessingCancelled)
         self.signals.errored.connect(self.onProcessingErrored)
 
@@ -52,11 +51,14 @@ class AbstractTabController:
             return
         Settings.update(processingSettings)
 
+        self.onProcessingStart()
+
         importSettings = Settings.get(self.tabType, SettingsType.IMPORT)
         calculationSettings = Settings.get(self.tabType, SettingsType.CALCULATION)
         headers = importSettings.getHeaders() + calculationSettings.getHeaders()
-        self.model.resetCalculations()
         self.view.onHeadersUpdated(headers)
+
+        self.model.resetCalculations()
         self.view.onAllRowsUpdated(self.model.rows)
 
         self._process(processingSettings)

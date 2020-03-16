@@ -15,6 +15,10 @@ class LeadLossApplication(AbstractApplication):
         return "0.0"
 
     @staticmethod
+    def getIcon():
+        return "../resources/icon.png"
+
+    @staticmethod
     def createController():
         return LeadLossTabController()
 

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QButtonGroup, QHBoxLayout, QRadioButton
 FORM_HORIZONTAL_SPACING = 15
 
 def attachValidator(widget, regex):
+    widget.setValidator(None)
     validator = QRegExpValidator(regex)
     widget.setValidator(validator)
 

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGroupBox
+from PyQt5.QtWidgets import QGroupBox, QFormLayout, QVBoxLayout
 
 from utils import calculations
 import numpy as np
@@ -7,8 +7,12 @@ import numpy as np
 class AbstractGraphPanel(QGroupBox):
 
     def __init__(self, *args, **kwargs):
-        super().__init__("Interactive", *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
+        layout = QVBoxLayout()
+        layout.addWidget(self.createGraph())
+        layout.addWidget(self.createCitation())
+        self.setLayout(layout)
 
     def _setupConcordiaPlot(self, axis):
         axis.set_xlabel("${}^{238}U/{}^{206}Pb$")
