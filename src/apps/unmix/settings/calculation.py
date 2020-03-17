@@ -25,7 +25,7 @@ class UnmixCalculationSettings():
 
         error = str(outputErrorSigmas) + " sigmas"
         minusError = "-" + error
-        plusError = "-" + error
+        plusError = "+" + error
 
         return [
             "Reconstructed age (Ma)",

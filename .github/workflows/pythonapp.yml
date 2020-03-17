@@ -99,6 +99,7 @@ jobs:
       #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
       #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      # Navigate into the folder before building to make sure relative links are working correctly
       - name: Build with pyinstaller
         shell: bash
         run: |
@@ -113,15 +114,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./dist/unmixApp${{matrix.EXTENSION}}
+          asset_path: ./src/dist/unmixApp${{matrix.EXTENSION}}
           asset_name: UPb-Unmixer-${{ steps.get_version.outputs.version }}-${{ matrix.OS_NAME }}${{matrix.EXTENSION}}
           asset_content_type: application/zip
-
-  delete-artifacts:
-    needs: [build-and-upload]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: kolpav/purge-artifacts-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          expire-in: 0days # Setting this to 0 will delete all artifacts
