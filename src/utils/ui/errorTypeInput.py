@@ -35,4 +35,4 @@ class ErrorTypeInput(QWidget):
         return stringUtils.ERROR_TYPE_OPTIONS[self._typeGroup.checkedId()]
 
     def getErrorSigmas(self):
-        return stringUtils.ERROR_SIGMA_OPTIONS[self._typeGroup.checkedId()]
+        return stringUtils.ERROR_SIGMA_OPTIONS[self._sigmasGroup.checkedId()]

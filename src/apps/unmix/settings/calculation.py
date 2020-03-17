@@ -23,16 +23,20 @@ class UnmixCalculationSettings():
     def _getHeaders(outputErrorSigmas, outputErrorType, useSuperscripts):
         outputErrorStr = stringUtils.get_error_str(outputErrorSigmas, outputErrorType)
 
+        error = str(outputErrorSigmas) + " sigmas"
+        minusError = "-" + error
+        plusError = "-" + error
+
         return [
             "Reconstructed age (Ma)",
-            "-" + outputErrorStr,
-            "+" + outputErrorStr,
+            minusError,
+            plusError,
             "Reconstructed " + stringUtils.getUPbStr(useSuperscripts),
-            "-" + outputErrorStr,
-            "+" + outputErrorStr,
+            minusError,
+            plusError,
             "Reconstructed " + stringUtils.getPbPbStr(useSuperscripts),
-            "-" + outputErrorStr,
-            "+" + outputErrorStr
+            minusError,
+            plusError
         ]
 
     def getHeaders(self):

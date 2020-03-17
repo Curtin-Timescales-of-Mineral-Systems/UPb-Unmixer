@@ -31,7 +31,7 @@ class UnmixHelpDialog(AbstractHelpDialog):
 
     def getProcessingHelpText(self):
         return \
-            "Processing the data will attempt to calculate an unmixed age with associated uncertainty values." \
+            "Processing the data will attempt to calculate a reconstructed core age with associated uncertainty values." \
             "<br><br>" \
             "Uncertainties are calculated using second order error propagation. " \
             "Due to the non-linearity of the concordia curve, the resulting uncertainties are not symmetric. " \
@@ -52,8 +52,8 @@ class UnmixHelpDialog(AbstractHelpDialog):
         return \
             "The following values are output:" \
             "<ul>" \
-            "<li> an unmixed age (in Ma)" \
-            "<li> an unmixed ²³⁸U/²⁰⁶Pb and ²⁰⁷Pb/²⁰⁶Pb ratios " \
+            "<li> a reconstructed core age (in Ma)" \
+            "<li> reconstructed core ²³⁸U/²⁰⁶Pb and ²⁰⁷Pb/²⁰⁶Pb ratios " \
             "<li> uncertainties for all of the above" \
             "</ul>" \
             "Clicking on an individual row permits visual inspection of the full solution " \

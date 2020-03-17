@@ -25,12 +25,17 @@ class AbstractDataPanel(QGroupBox):
         self.importFileText = QLineEdit("")
         self.importFileText.setReadOnly(True)
 
+        self.helpButton = QPushButton("  Help")
+        self.helpButton.clicked.connect(self.controller.showHelp)
+        self.helpButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
+
         self.importWidget = QWidget()
-        importWidgetLayout = QHBoxLayout()
-        importWidgetLayout.addWidget(self.importButton)
-        importWidgetLayout.addWidget(self.importFileText)
-        importWidgetLayout.setContentsMargins(0,0,0,5)
-        self.importWidget.setLayout(importWidgetLayout)
+        layout = QHBoxLayout()
+        layout.addWidget(self.importButton)
+        layout.addWidget(self.importFileText)
+        layout.addWidget(self.helpButton)
+        layout.setContentsMargins(0,0,0,5)
+        self.importWidget.setLayout(layout)
 
     def _initDataTable(self):
         self.dataTable = QTableWidget(1, 1)
@@ -56,15 +61,10 @@ class AbstractDataPanel(QGroupBox):
         self.exportButton.setEnabled(False)
         self.exportButton.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
 
-        self.helpButton = QPushButton("  Help")
-        self.helpButton.clicked.connect(self.controller.showHelp)
-        self.helpButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
-
         self.actionButtonsWidget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(self.processButton)
         layout.addWidget(self.exportButton)
-        layout.addWidget(self.helpButton)
         self.actionButtonsWidget.setLayout(layout)
 
     #############
