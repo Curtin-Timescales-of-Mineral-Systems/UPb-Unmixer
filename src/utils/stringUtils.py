@@ -18,6 +18,9 @@ SAVE_FILE = "../concordia_save_data.pkl"
 ## Functions ##
 ###############
 
+def getConstantStr(constant):#
+    return '%.6g' % constant
+
 def getUPbStr(useSuperscripts):
     if useSuperscripts:
         return U_PB_STR

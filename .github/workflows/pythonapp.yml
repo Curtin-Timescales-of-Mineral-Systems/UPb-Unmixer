@@ -99,13 +99,10 @@ jobs:
       #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
       #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      # Navigate into the folder before building to make sure relative links are working correctly
       - name: Build with pyinstaller
         shell: bash
         run: |
-          cd src/
-          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --icon=../resources/unmix_icon.ico unmixApp.py
-          cd ..
+          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --icon=/resources/unmix_icon.ico unmixApp.py
 
       - name: Upload release asset
         id: upload-release-asset
@@ -114,6 +111,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./src/dist/unmixApp${{matrix.EXTENSION}}
+          asset_path: ./dist/unmixApp${{matrix.EXTENSION}}
           asset_name: UPb-Unmixer-${{ steps.get_version.outputs.version }}-${{ matrix.OS_NAME }}${{matrix.EXTENSION}}
           asset_content_type: application/zip

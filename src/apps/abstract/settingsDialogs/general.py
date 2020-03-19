@@ -1,9 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from utils import stringUtils
 from utils.ui import uiUtils
-from utils.ui.radioButtonGroup import RadioButtonGroup
 
 
 class AbstractSettingsDialog(QDialog):

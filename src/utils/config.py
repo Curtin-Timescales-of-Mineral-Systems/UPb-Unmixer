@@ -14,6 +14,7 @@ ERROR_TYPE_OUTPUT = "Absolute"
 
 # Other
 OUTPUT_SIGNIFICANT_FIGURES = 3
+CONSTANT_SIGNIFICANT_FIGURES = 6
 
 ##################
 ## CSV settingsDialogs ##

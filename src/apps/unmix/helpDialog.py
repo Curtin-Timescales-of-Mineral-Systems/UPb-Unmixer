@@ -1,5 +1,5 @@
 from apps.abstract.helpDialog import AbstractHelpDialog
-from utils import calculations
+from utils import calculations, stringUtils
 
 
 class UnmixHelpDialog(AbstractHelpDialog):
@@ -43,9 +43,9 @@ class UnmixHelpDialog(AbstractHelpDialog):
             "<br><br>" \
             "Constants used:" \
             "<ul>" \
-            "<li> ²³⁸U decay constant = " + str(calculations.U238_DECAY_CONSTANT) + \
-            "<li> ²³⁵U decay constant = " + str(calculations.U235_DECAY_CONSTANT) + \
-            "<li> ²³⁸U/²³⁵U ratio " + "&nbsp;"*6 + " = " + str(calculations.U238U235_RATIO) + \
+            "<li> ²³⁸U/²³⁵U ratio " + "&nbsp;"*10 + " = " + stringUtils.getConstantStr(calculations.U238U235_RATIO) + \
+            "<li> ²³⁸U decay constant = " + stringUtils.getConstantStr(calculations.U238_DECAY_CONSTANT) + \
+            "<li> ²³⁵U decay constant = " + stringUtils.getConstantStr(calculations.U235_DECAY_CONSTANT) + \
             "<ul>"
 
     def getOutputsHelpText(self):

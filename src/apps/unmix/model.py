@@ -47,7 +47,7 @@ class UnmixModel(AbstractModel):
         self.view = view
 
     def loadRawData(self, importSettings, rawHeaders, rawRows):
-        self.headers = rawHeaders
+        self.rawHeaders = rawHeaders
         self.rows = [Row(row, importSettings) for row in rawRows]
 
         importHeaders = importSettings.getHeaders()
@@ -67,8 +67,8 @@ class UnmixModel(AbstractModel):
         pass
 
     def getExportData(self, calculationSettings):
-        headers = self.headers + calculationSettings.getExportHeaders()
-        rows = [[cell.value for cell in row.importedCells + row.calculatedCells] for row in self.rows]
+        headers = self.rawHeaders + calculationSettings.getExportHeaders()
+        rows = [row.rawImportedValues + [cell.value for cell in row.calculatedCells] for row in self.rows]
         return headers, rows
 
 
@@ -150,8 +150,7 @@ class Row(AbstractRow):
         self.validOutput = self.reconstructedAgeObj is not None
         if not self.validOutput:
             return
-
-        self.validOutput = self.reconstructedAgeObj.hasMinValue() and self.reconstructedAgeObj.hasMaxValue()
+        self.validOutput = self.reconstructedAgeObj.fullyValid
 
         t, t_min, t_max = self.reconstructedAgeObj.getAge()
         u, u_min, u_max = self.reconstructedAgeObj.getUPb()

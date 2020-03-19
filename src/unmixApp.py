@@ -13,7 +13,7 @@ class UPbUnmixerApplication(AbstractApplication):
 
     @staticmethod
     def getVersion():
-        return "0.6"
+        return "0.10"
 
     @staticmethod
     def getIcon():

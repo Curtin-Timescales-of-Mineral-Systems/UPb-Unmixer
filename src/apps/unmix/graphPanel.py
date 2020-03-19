@@ -97,46 +97,53 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
         reconstructedAge = row.reconstructedAgeObj
 
-        if not reconstructedAge.hasValue():
-            t_xs = []
-            t_ys = []
+        if reconstructedAge is None:
+            x3s = []
+            y3s = []
             t_error_xs = []
             t_error_ys = []
-            x3_error_xs = []
-            y3_error_ys = []
-            # t_label_text = _get_label_text(None, None, None)
+            x3_errors = []
+            y3_errors = []
+            t3_fmt = 'none'
             xlim = self._default_xlim
             ylim = self._default_ylim
+            label_text = "(no intercept with concordia curve found)"
         else:
-            (t, x3, y3) = reconstructedAge.values
+            t, x3, y3 = reconstructedAge.values
+            t_min, x3_min, y3_min = reconstructedAge.minValues
+            t_max, x3_max, y3_max = reconstructedAge.maxValues
+
             best_fit_line_xs += [x3]
             best_fit_line_ys += [y3]
 
-            t_xs = [x3]
-            t_ys = [y3]
-
             label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
-            if not reconstructedAge.hasMinValue() or not reconstructedAge.hasMaxValue():
-                t_error_xs = []
-                t_error_ys = []
-                x3_error_xs = [[0], [0]]
-                y3_error_ys = [[0], [0]]
-                xlim, ylim = self._calculateMargin(x3, x1 + x1_error, y1 - y1_error, y3)
-                label_text += "\n (no error bars available for reconstructed age)"
-                t3_fmt = "^"
-            else:
-                t_min, x3_min, y3_min = reconstructedAge.minValues
-                t_max, x3_max, y3_max = reconstructedAge.maxValues
+            if not t_min:
+                t_min = t
+                label_text += "\n (no lower error bar available for reconstructed age)"
+            if not t_max:
+                t_max = t
+                label_text += "\n (no upper error bar available for reconstructed age)"
+            t3_fmt = 'none' if reconstructedAge.fullyValid else "^"
 
-                x3_error_xs = [[x3-x3_min], [x3_max-x3]]
-                y3_error_ys = [[y3-y3_min], [y3_max-y3]]
-                ts = list(np.linspace(start=t_min, stop=t_max, num=20))
-                t_error_xs = [calculations.u238pb206_from_age(t) for t in ts]
-                t_error_ys = [calculations.pb207pb206_from_age(t) for t in ts]
+            if not x3_min:
+                x3_min = x3
+            if not x3_max:
+                x3_max = x3
+            if not y3_min:
+                y3_min = y3
+            if not y3_max:
+                y3_max = y3
 
-                xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
-                t3_fmt = 'none'
-                # t_label_text = _get_label_text(t, t_min, t_max)
+            x3s = [x3]
+            y3s = [y3]
+            x3_errors = [[x3-x3_min], [x3_max-x3]]
+            y3_errors = [[y3-y3_min], [y3_max-y3]]
+
+            ts = list(np.linspace(start=t_min, stop=t_max, num=20))
+            t_error_xs = [calculations.u238pb206_from_age(t) for t in ts]
+            t_error_ys = [calculations.pb207pb206_from_age(t) for t in ts]
+
+            xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
 
         self.axis.set_xlim(*xlim)
         self.axis.set_ylim(*ylim)
@@ -150,7 +157,7 @@ class UnmixGraphPanel(AbstractGraphPanel):
         # Reconstructed age error line
         self.axis.plot(t_error_xs, t_error_ys, color=config.COLOUR_RECONSTRUCTED_AGE, linewidth=2)[0]
         # Reconstructed age xy points
-        self.axis.errorbar(t_xs, t_ys, xerr=x3_error_xs, yerr=y3_error_ys, fmt=t3_fmt, color=config.COLOUR_RECONSTRUCTED_AGE)
+        self.axis.errorbar(x3s, y3s, xerr=x3_errors, yerr=y3_errors, fmt=t3_fmt, color=config.COLOUR_RECONSTRUCTED_AGE)
         # Text
         self.axis.text(0.95, 0.95, label_text, horizontalalignment='right', verticalalignment='top', transform=self.axis.transAxes)
         #plt.text(12, 0.4, t_label_text)
@@ -158,19 +165,25 @@ class UnmixGraphPanel(AbstractGraphPanel):
 
 
     def _displayRows(self, rows, calculationSettings):
-        xs = []
-        ys = []
-        xs_error_min = []
-        xs_error_max = []
-        ys_error_min = []
-        ys_error_max = []
+        good_xs = []
+        good_ys = []
+        good_xs_error_min = []
+        good_xs_error_max = []
+        good_ys_error_min = []
+        good_ys_error_max = []
+
         bad_xs = []
         bad_ys = []
+        bad_xs_error_min = []
+        bad_xs_error_max = []
+        bad_ys_error_min = []
+        bad_ys_error_max = []
 
         xmax, xmin = self._default_xlim
         ymax, ymin = self._default_ylim
 
         anyRows = False
+        anyInvalidRows = False
         for row in rows:
             if not row.validImports or not row.processed or row.reconstructedAgeObj is None:
                 continue
@@ -178,34 +191,51 @@ class UnmixGraphPanel(AbstractGraphPanel):
             anyRows = True
             reconstructedAge = row.reconstructedAgeObj
             (t, x3, y3) = reconstructedAge.values
+            t_min, x3_min, y3_min = reconstructedAge.minValues
+            t_max, x3_max, y3_max = reconstructedAge.maxValues
 
-            if not reconstructedAge.hasMinValue() or not reconstructedAge.hasMaxValue():
-                bad_xs += [x3]
-                bad_ys += [y3]
+            if not x3_min:
+                x3_min = x3
+            if not x3_max:
+                x3_max = x3
+            if not y3_min:
+                y3_min = y3
+            if not y3_max:
+                y3_max = y3
 
-                xmin = min(xmin, x3)
-                xmax = max(xmax, x3)
-                ymin = min(ymin, y3)
-                ymax = max(ymax, y3)
+            if reconstructedAge.fullyValid:
+                xs = good_xs
+                ys = good_ys
+                xs_error_min = good_xs_error_min
+                xs_error_max = good_xs_error_max
+                ys_error_min = good_ys_error_min
+                ys_error_max = good_ys_error_max
             else:
-                t_min, x3_min, y3_min = reconstructedAge.minValues
-                t_max, x3_max, y3_max = reconstructedAge.maxValues
+                anyInvalidRows = True
+                xs = bad_xs
+                ys = bad_ys
+                xs_error_min = bad_xs_error_min
+                xs_error_max = bad_xs_error_max
+                ys_error_min = bad_ys_error_min
+                ys_error_max = bad_ys_error_max
 
-                xs += [x3]
-                ys += [y3]
+            xs += [x3]
+            ys += [y3]
 
-                xs_error_min += [x3 - x3_min]
-                xs_error_max += [x3_max - x3]
-                ys_error_min += [y3 - y3_min]
-                ys_error_max += [y3_max - y3]
+            xmin = min(xmin, x3_min)
+            xmax = max(xmax, x3_max)
+            ymin = min(ymin, y3_min)
+            ymax = max(ymax, y3_max)
 
-                xmin = min(xmin, x3_min)
-                xmax = max(xmax, x3_max)
-                ymin = min(ymin, y3_min)
-                ymax = max(ymax, y3_max)
+            xs_error_min += [x3 - x3_min]
+            xs_error_max += [x3_max - x3]
+            ys_error_min += [y3 - y3_min]
+            ys_error_max += [y3_max - y3]
 
-        xs_error = xs_error_min, xs_error_max
-        ys_error = ys_error_min, ys_error_max
+        good_xs_error = good_xs_error_min, good_xs_error_max
+        good_ys_error = good_ys_error_min, good_ys_error_max
+        bad_xs_error = bad_xs_error_min, bad_xs_error_max
+        bad_ys_error = bad_ys_error_min, bad_ys_error_max
 
         if anyRows:
             xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
@@ -217,8 +247,11 @@ class UnmixGraphPanel(AbstractGraphPanel):
         else:
             label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
 
-        self.axis.errorbar(xs, ys, xerr=xs_error, yerr=ys_error, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
-        self.axis.errorbar(bad_xs, bad_ys, fmt='^', color=config.COLOUR_RECONSTRUCTED_AGE)
+        if anyInvalidRows:
+            label_text += "\n (some error bars unavailable)"
+
+        self.axis.errorbar(good_xs, good_ys, xerr=good_xs_error, yerr=good_ys_error, fmt='none', color=config.COLOUR_RECONSTRUCTED_AGE)
+        self.axis.errorbar(bad_xs, bad_ys, xerr=bad_xs_error, yerr=bad_ys_error, fmt='^', color=config.COLOUR_RECONSTRUCTED_AGE)
 
         self.axis.set_xlim(*xlim)
         self.axis.set_ylim(*ylim)
