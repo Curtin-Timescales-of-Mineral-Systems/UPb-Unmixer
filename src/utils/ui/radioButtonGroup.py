@@ -22,3 +22,14 @@ class RadioButtonGroup(QWidget):
 
     def getSelection(self):
         return self.options[self.group.checkedId()]
+
+
+class IntRadioButtonGroup(RadioButtonGroup):
+
+    def __init__(self, options, validation, default):
+        optionsStr = [str(v) for v in options]
+        defaultStr = str(default)
+        super().__init__(optionsStr, validation, defaultStr)
+
+    def getSelection(self):
+        return int(super().getSelection())

@@ -12,23 +12,28 @@ class LeadLossImportSettings(AbstractImportSettings):
     def __init__(self):
         super().__init__(LeadLossModel.getImportedColumnSpecs())
 
-        self.inputErrorSigmas = 2
-        self.inputErrorType = "Absolute"
+        self.uPbErrorType = "Absolute"
+        self.uPbErrorSigmas = 2
+
+        self.pbPbErrorType = "Absolute"
+        self.pbPbErrorSigmas = 2
 
         self.discordanceThreshold = 0.1
 
-    def getInputErrorStr(self):
-        return stringUtils.get_error_str(self.inputErrorSigmas, self.inputErrorType)
+    def getUPbErrorStr(self):
+        return stringUtils.get_error_str(self.uPbErrorSigmas, self.uPbErrorType)
+
+    def getPbPbErrorStr(self):
+        return stringUtils.get_error_str(self.pbPbErrorSigmas, self.pbPbErrorType)
 
     def getHeaders(self):
-        inputErrorStr = "±" + self.getInputErrorStr()
         return [
             stringUtils.U_PB_STR,
-            inputErrorStr,
+            "±" + self.getUPbErrorStr(),
             stringUtils.PB_PB_STR,
-            inputErrorStr
+            "±" + self.getPbPbErrorStr()
         ]
 
     def validate(self):
-        return None
+        return super().validate()
 

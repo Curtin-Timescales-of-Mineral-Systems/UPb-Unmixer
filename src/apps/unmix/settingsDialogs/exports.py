@@ -1,3 +1,0 @@
-
-class UnmixExportSettingsDialog():
-    pass

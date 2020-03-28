@@ -12,13 +12,7 @@ class UnmixCalculationSettingsDialog(AbstractCalculationSettingsDialog):
     def __init__(self, defaultSettings, *args, **kwargs):
         super().__init__(defaultSettings, *args, **kwargs)
 
-    def initUI(self):
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.initErrorSettings())
-        self.layout.addWidget(self.initButtons())
-        self.setLayout(self.layout)
-
-    def initErrorSettings(self):
+    def initMainSettings(self):
         defaults = self.defaultSettings
 
         self._outputErrorSigmasRB = ErrorTypeInput(self._validate, defaults.outputErrorType, defaults.outputErrorSigmas)

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QGroupBox, QFormLayout, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QFormLayout, QVBoxLayout, QLabel
 
 from utils import calculations
 import numpy as np
@@ -11,7 +12,7 @@ class AbstractGraphPanel(QGroupBox):
 
         layout = QVBoxLayout()
         layout.addWidget(self.createGraph())
-        layout.addWidget(self.createCitation())
+        layout.addWidget(self._createCitation())
         self.setLayout(layout)
 
     def _setupConcordiaPlot(self, axis):
@@ -36,3 +37,10 @@ class AbstractGraphPanel(QGroupBox):
         for i, txt in enumerate(ts2):
             axis.annotate(str(txt) + " ", (xs2[i], ys2[i]), horizontalalignment="right", verticalalignment="top",
                          fontsize="small")
+
+    def _createCitation(self):
+        label = QLabel(self._getCitationText())
+        label.setWordWrap(True)
+        label.setTextFormat(Qt.RichText)
+        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        return label

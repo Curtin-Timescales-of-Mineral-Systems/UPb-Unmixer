@@ -14,14 +14,17 @@ class ColumnReferenceInput(QWidget):
     def __init__(self, validation, referenceType, defaultValue):
         super().__init__()
 
-        self.numberWidget = QLineEdit(str(csvUtils.columnLettersToNumber(defaultValue, zeroIndexed=False)))
+        letterDefault = csvUtils.columnNumberToLetters(defaultValue, zeroIndexed=True)
+        numberDefault = str(defaultValue + 1)
+
+        self.numberWidget = QLineEdit(numberDefault)
         self.numberWidget.setFixedWidth(self.width)
         self.numberWidget.setAlignment(Qt.AlignCenter)
         self.numberWidget.textChanged.connect(validation)
         self.numberWidget.setVisible(referenceType is ColumnReferenceType.NUMBERS)
         uiUtils.attachValidator(self.numberWidget, csvUtils.COLUMN_REFERENCE_TYPE_REGEXES[ColumnReferenceType.NUMBERS])
 
-        self.lettersWidget = QLineEdit(csvUtils.columnNumberToLetters(defaultValue, zeroIndexed=False))
+        self.lettersWidget = QLineEdit(letterDefault)
         self.lettersWidget.setFixedWidth(self.width)
         self.lettersWidget.setAlignment(Qt.AlignCenter)
         self.lettersWidget.textChanged.connect(validation)
@@ -56,5 +59,16 @@ class ColumnReferenceInput(QWidget):
         self.currentReferenceType = newReferenceType
 
     def text(self):
-        widget = self.lettersWidget if self.currentReferenceType is ColumnReferenceType.LETTERS else self.numberWidget
-        return widget.text()
+        if self.currentReferenceType is ColumnReferenceType.LETTERS:
+            text = self.lettersWidget.text()
+            if not text:
+                return None
+            return csvUtils.columnLettersToNumber(text, zeroIndexed=True)
+
+        if self.currentReferenceType is ColumnReferenceType.NUMBERS:
+            text = self.numberWidget.text()
+            if not text:
+                return None
+            return int(text) - 1
+
+        raise Exception("Unknown ColumnReferenceType: " + str(self.currentReferenceType))

@@ -1,17 +1,15 @@
 from enum import Enum
 
-from utils import errorUtils, calculations
+from apps.leadLoss import processing
 
-from scipy import stats
-
-from apps.abstract.model import AbstractRow, ColumnSpec, CalculatedCell, UncalculatedCell, AbstractModel
+from apps.abstract.model import AbstractRow, ColumnSpec, AbstractModel
 from apps.leadLoss.settings.calculation import LeadLossCalculationSettings
 
 
 class Column(Enum):
-    U_PB = 0
+    U_PB_VALUE = 0
     U_PB_ERROR = 1
-    PB_PB = 2
+    PB_PB_VALUE = 2
     PB_PB_ERROR = 3
 
 class LeadLossModel(AbstractModel):
@@ -23,9 +21,9 @@ class LeadLossModel(AbstractModel):
     @staticmethod
     def getImportedColumnSpecs():
         return [
-            ColumnSpec(Column.U_PB),
+            ColumnSpec(Column.U_PB_VALUE),
             ColumnSpec(Column.U_PB_ERROR),
-            ColumnSpec(Column.PB_PB),
+            ColumnSpec(Column.PB_PB_VALUE),
             ColumnSpec(Column.PB_PB_ERROR),
         ]
 
@@ -63,91 +61,11 @@ class LeadLossModel(AbstractModel):
         self.view.onHeadersUpdated(headers)
         self.view.onAllRowsUpdated(self.rows)
 
-    def process(self, signals, importSettings, calculationSettings):
+    def getProcessingFunction(self):
+        return processing.process
 
-        # Calculate concordance
-        concordantRows = []
-        discordantRows = []
-        for row in self.rows:
-            uPb = row.importedCellsByCol[Column.U_PB].value
-            pbPb = row.importedCellsByCol[Column.PB_PB].value
-            discordance = calculations.discordance(uPb, pbPb)
-
-            row.calculatedCells[0] = CalculatedCell(discordance)
-            row.concordant = discordance < calculationSettings.discordancePercentageCutoff
-            if row.concordant:
-                age = calculations.concordant_age(uPb, pbPb)
-                row.calculatedCells[1] = CalculatedCell(age)
-                concordantRows.append(row)
-            else:
-                row.calculatedCells[1] = UncalculatedCell()
-                discordantRows.append(row)
-
-        concordantAges = [row.calculatedCells[1].value for row in concordantRows]
-
-        # Pre-calculate the ufloats as that's the expensive bit
-        progressSplit = 1.0
-        for i, row in enumerate(self.rows):
-            if signals.halt():
-                signals.cancelled()
-                return
-
-            if not row.concordant:
-                uPb = row.importedCellsByCol[Column.U_PB].value
-                uPbError = row.importedCellsByCol[Column.U_PB_ERROR].value
-                pbPb = row.importedCellsByCol[Column.PB_PB].value
-                pbPbError = row.importedCellsByCol[Column.PB_PB_ERROR].value
-
-                row.uPb = errorUtils.ufloat(uPb, uPbError)
-                row.pbPb = errorUtils.ufloat(pbPb, pbPbError)
-
-            progress = progressSplit*(i + 1)/len(self.rows)
-            signals.progress(progress, i, row)
-
-        # Actually compute the age distributions and statistics
-        minAge = 500 * (10 ** 6)
-        maxAge = 5000 * (10 ** 6)
-        agePoints = 91
-        cap = 10
-
-        outputs = []
-        for i in range(agePoints):
-            rimAge = minAge + i*((maxAge - minAge)/(agePoints - 1))
-            rimUPb = calculations.u238pb206_from_age(rimAge)
-            rimPbPb = calculations.pb207pb206_from_age(rimAge)
-
-            discordantAges = []
-            for j, row in enumerate(self.rows):
-                if signals.halt():
-                    signals.cancelled()
-                    return
-
-                if row.concordant or j >= cap:
-                    reconstructedAge = None
-                else:
-                    reconstructedAge = calculations.discordant_age(rimUPb, rimPbPb, row.uPb, row.pbPb, 1)
-                discordantAges.append(reconstructedAge)
-
-            statistic = self.calculateStatistics(concordantAges, discordantAges)
-            outputs.append((rimAge, discordantAges, statistic))
-
-            progress = progressSplit + (1 - progressSplit) * (i+i/agePoints)
-            #signals.progress(progress)
-
-        signals.completed(outputs)
-
-    def calculateStatistics(self, concordantAges, reconstructedAges):
-        discordantAges = []
-        for reconstructedAge in reconstructedAges:
-            if reconstructedAge is not None and reconstructedAge.hasValue():
-                discordantAges.append(reconstructedAge.values[0])
-
-        if not discordantAges or not concordantAges:
-            return 0
-
-        pValue = stats.ks_2samp(concordantAges, discordantAges)[1]
-        print(pValue)
-        return pValue
+    def getProcessingData(self):
+        return self.rows
 
     def addProcessingOutput(self, output):
         self.statistics = {}
@@ -157,7 +75,8 @@ class LeadLossModel(AbstractModel):
             self.reconstructedAges[rimAge] = reconstructedAges
 
         concordantAges = [row.calculatedCells[1].value for row in self.rows if row.concordant]
-        self.view.onNewConcordantPoints(self.rows, concordantAges)
+        discordantAges = [row.calculatedCells[1].value for row in self.rows if not row.concordant]
+        self.view.onNewlyClassifiedPoints(self.rows, concordantAges, discordantAges)
         self.view.onNewStatistics(self.statistics)
 
     def selectAgeToCompare(self, targetRimAge):
@@ -171,10 +90,18 @@ class LeadLossModel(AbstractModel):
 
         agesToCompare = []
         for reconstructedAge in self.reconstructedAges[chosenRimAge]:
-            if reconstructedAge is not None and reconstructedAge.hasValue():
+            if reconstructedAge is not None:
                 agesToCompare.append(reconstructedAge.values[0])
         self.view.displayAgeComparison(chosenRimAge, agesToCompare)
+
 
 class Row(AbstractRow):
     def __init__(self, importedValues, importSettings):
         super().__init__(importedValues, importSettings, LeadLossModel.getCalculatedColumnSpecs())
+
+    def uPbValue(self):
+        return self.importedCellsByCol[Column.U_PB_VALUE].value
+
+    def pbPbValue(self):
+        return self.importedCellsByCol[Column.U_PB_VALUE].value
+

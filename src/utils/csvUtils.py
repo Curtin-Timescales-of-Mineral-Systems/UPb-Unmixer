@@ -4,10 +4,6 @@ from enum import Enum
 from PyQt5.QtCore import QRegExp
 
 from utils.config import *
-from utils import stringUtils
-
-import utils.errorUtils as errors
-import utils.calculations as calculations
 
 
 #######################
@@ -55,6 +51,12 @@ def columnLettersToNumber(letters, zeroIndexed):
         number -= 1
     return number
 
+def convertColumnRef(ref, columnRefType, zeroIndexed):
+    if columnRefType is ColumnReferenceType.NUMBERS:
+        return columnLettersToNumber(ref, zeroIndexed)
+    if columnRefType is ColumnReferenceType.LETTERS:
+        return columnNumberToLetters(ref, zeroIndexed)
+    raise Exception("Unexpected ColumnReferenceType: " + str(columnRefType))
 
 def _letterToNumber(letter):
     return ord(letter) - 64
@@ -79,6 +81,17 @@ def read_input(input_file, settings):
         else:
             rows = lines
             headers = None
+
+    largestColumnNumberAskedFor = max(settings.getDisplayColumns())
+
+    for line in lines:
+        if largestColumnNumberAskedFor >= len(line):
+            largestColumnRefAvailable = convertColumnRef(len(line), settings.columnReferenceType, False)
+            largestColumnRefAskedFor = convertColumnRef(largestColumnNumberAskedFor+1, settings.columnReferenceType, False)
+            raise Exception(
+                "Invalid column reference. Asked for column " + str(largestColumnRefAskedFor) + " but the CSV file only"
+                " goes up to column " + str(largestColumnRefAvailable) + "."
+            )
 
     return headers, rows
 

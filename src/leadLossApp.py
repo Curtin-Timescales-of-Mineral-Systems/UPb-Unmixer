@@ -1,5 +1,6 @@
 from apps.abstract.application import AbstractApplication
 from apps.leadLoss.controller import LeadLossTabController
+from utils import config
 
 
 class LeadLossApplication(AbstractApplication):
@@ -8,11 +9,11 @@ class LeadLossApplication(AbstractApplication):
 
     @staticmethod
     def getTitle():
-        return "Lead loss"
+        return config.LEAD_LOSS_TITLE
 
     @staticmethod
     def getVersion():
-        return "0.0"
+        return "0.1"
 
     @staticmethod
     def getIcon():

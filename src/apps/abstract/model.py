@@ -78,7 +78,7 @@ class AbstractRow:
         self.processed = False
         self.calculatedCellSpecs = calculatedCellSpecs
 
-        displayedImportedColumns = importSettings.getDisplayColumns()
+        displayedImportedColumns = importSettings.getDisplayColumnsWithRefs()
         self.importedCells = [ImportedCell(importedValues[i]) for _, i in displayedImportedColumns]
         self.importedCellsByCol = {col:self.importedCells[j] for j, (col, _) in enumerate(displayedImportedColumns)}
         self.validImports = all(cell.isValid() for cell in self.importedCells)

@@ -1,5 +1,5 @@
 from apps.abstract.helpDialog import AbstractHelpDialog
-from utils import calculations, stringUtils
+from utils import calculations, stringUtils, config
 
 
 class UnmixHelpDialog(AbstractHelpDialog):
@@ -7,7 +7,7 @@ class UnmixHelpDialog(AbstractHelpDialog):
         super().__init__()
 
     def getTitle(self):
-        return "U-Pb Unmixer"
+        return config.U_PB_UNMIXER_TITLE
 
     def getInputsHelpText(self):
         return \
@@ -15,19 +15,8 @@ class UnmixHelpDialog(AbstractHelpDialog):
             "<li> known age (in Ma) of rim (younger) component in mixture" \
             "<li> measured ²³⁸U/²⁰⁶Pb and ²⁰⁷Pb/²⁰⁶Pb ratios" \
             "<li> uncertainties for all of the above" \
-            "</ul>" \
-            "Data can be parsed from a range of csv file layouts by specifying which columns the required values are " \
-            "in. Columns can be referred to either by using:" \
-            "<ul>" \
-            "  <li> numbers (1, 2, 3, ..., 26, 27, ...)" \
-            "  <li> letters (A, B, C, ..., Z, AA, ...)" \
-            "</ul>" \
-            "Different uncertainty formats are also supported:" \
-            "<ul>" \
-            "  <li> percentage vs absolute" \
-            "  <li> 1σ vs 2σ" \
-            "</ul>" \
-            "If a row in the imported data is invalid then it will be highlighted in <font color='red'>RED</font>."
+            "</ul>" + \
+            self._getStandardInputHelp()
 
     def getProcessingHelpText(self):
         return \
@@ -40,13 +29,8 @@ class UnmixHelpDialog(AbstractHelpDialog):
             "Rows with successful calculations will be highlighted in <font color='green'>GREEN</font>." \
             "<br><br>" \
             "Rows with partially successful calculations will be highlighted in <font color='orange'>ORANGE</font>." \
-            "<br><br>" \
-            "Constants used:" \
-            "<ul>" \
-            "<li> ²³⁸U/²³⁵U ratio " + "&nbsp;"*10 + " = " + stringUtils.getConstantStr(calculations.U238U235_RATIO) + \
-            "<li> ²³⁸U decay constant = " + stringUtils.getConstantStr(calculations.U238_DECAY_CONSTANT) + \
-            "<li> ²³⁵U decay constant = " + stringUtils.getConstantStr(calculations.U235_DECAY_CONSTANT) + \
-            "<ul>"
+            "<br><br>"  + \
+            self._getStandardProcessingHelp()
 
     def getOutputsHelpText(self):
         return \
@@ -61,9 +45,5 @@ class UnmixHelpDialog(AbstractHelpDialog):
             "<br><br>" \
             "Selecting multiple rows permits visual inspection of the final calculated ages of " \
             "all the rows in the selection." \
-            "<br><br>" \
-            "The concordia plot may be fully customised (markers, colours, scale etc.) using the " \
-            "tools at the bottom of the plot. The plot can also be saved to various image formats." \
-            "<br><br>" \
-            "When the calculated values are exported back to a CSV file, the values are appended to the end of the " \
-            "columns of the original CSV file."
+            "<br><br>"  + \
+            self._getStandardOutputsHelp()

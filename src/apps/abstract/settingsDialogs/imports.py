@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from utils import stringUtils
+from utils.csvUtils import ColumnReferenceType
 from utils.ui import uiUtils
 from apps.abstract.settingsDialogs.general import AbstractSettingsDialog
 from utils.ui.columnReferenceInput import ColumnReferenceInput
@@ -16,12 +17,10 @@ class AbstractImportSettingsDialog(AbstractSettingsDialog):
         super().__init__(defaultSettings, *args, **kwargs)
         self.setWindowTitle("CSV import settings")
 
-    def initUI(self):
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.initCSVSettings())
-        self.layout.addWidget(self.initButtons())
-        self.setLayout(self.layout)
-
+    def _onColumnRefChange(self, button):
+        newRefType = ColumnReferenceType(button.option)
+        self._updateColumnRefs(newRefType)
+        self._validate()
 
 # Widget for displaying general CSV import settings
 
@@ -39,8 +38,7 @@ class GeneralSettingsWidget(QGroupBox):
         self._hasHeadersCB.setChecked(defaultSettings.hasHeaders)
         self._hasHeadersCB.stateChanged.connect(validation)
 
-        self._columnRefType = ColumnReferenceTypeInput(validation)
-
+        self._columnRefType = ColumnReferenceTypeInput(validation, defaultSettings.columnReferenceType)
         self.columnRefChanged = self._columnRefType.group.buttonReleased
 
         layout = QFormLayout()

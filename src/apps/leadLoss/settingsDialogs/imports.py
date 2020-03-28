@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel
+from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel, QGridLayout, QWidget
 
 from utils import stringUtils
-from apps.abstract.settingsDialogs.imports import AbstractImportSettingsDialog
+from apps.abstract.settingsDialogs.imports import AbstractImportSettingsDialog, ImportedValueErrorWidget, \
+    GeneralSettingsWidget
 from apps.leadLoss.model import Column
 from apps.leadLoss.settings.imports import LeadLossImportSettings
+from utils.csvUtils import ColumnReferenceType
 
 
 class LeadLossImportSettingsDialog(AbstractImportSettingsDialog):
@@ -15,52 +17,71 @@ class LeadLossImportSettingsDialog(AbstractImportSettingsDialog):
     ## UI layout ##
     ###############
 
-    def initErrorSettings(self):
+    def initMainSettings(self):
         defaults = self.defaultSettings
+        columnRefs = defaults.getDisplayColumnsByRefs()
 
-        self.inputSigmasRB, self.inputTypeRB, inputLayout = self._createErrorRow(defaults.inputErrorSigmas, defaults.inputErrorType)
+        self._generalSettingsWidget = GeneralSettingsWidget(self._validate, defaults)
+        self._generalSettingsWidget.columnRefChanged.connect(self._onColumnRefChange)
 
-        box = QGroupBox("Errors")
-        layout = QFormLayout()
-        layout.addRow("Inputs", inputLayout)
-        box.setLayout(layout)
-        return box
+        self._uPbWidget = ImportedValueErrorWidget(
+            stringUtils.getUPbStr(True),
+            self._validate,
+            defaults.columnReferenceType,
+            columnRefs[Column.U_PB_VALUE],
+            columnRefs[Column.U_PB_ERROR],
+            defaults.uPbErrorType,
+            defaults.uPbErrorSigmas
+        )
 
-    def initCSVSettings(self):
-        columnRefs = self.defaultSettings.getDisplayColumnsAsStrings()
-        uPbCol = columnRefs[Column.U_PB]
-        uPbErrorCol = columnRefs[Column.U_PB_ERROR]
-        pbPbCol = columnRefs[Column.PB_PB]
-        pbPbErrorCol = columnRefs[Column.PB_PB_ERROR]
+        self._pbPbWidget = ImportedValueErrorWidget(
+            stringUtils.getPbPbStr(True),
+            self._validate,
+            defaults.columnReferenceType,
+            columnRefs[Column.PB_PB_VALUE],
+            columnRefs[Column.PB_PB_ERROR],
+            defaults.pbPbErrorType,
+            defaults.pbPbErrorSigmas
+        )
 
-        self.uPbColumnEntry, self.uPbErrorColumnEntry, uPbColumnLayout = self._createColumnRow(uPbCol, uPbErrorCol)
-        self.pbPbColumnEntry, self.pbPbErrorColumnEntry, pbPbColumnLayout = self._createColumnRow(pbPbCol, pbPbErrorCol)
+        self._updateColumnRefs(defaults.columnReferenceType)
 
-        self.delimiterEntry, self.hasHeadersCB = self._createStandardCSVFields()
+        layout = QGridLayout()
+        layout.setHorizontalSpacing(15)
+        layout.setVerticalSpacing(15)
+        layout.addWidget(self._generalSettingsWidget, 0, 0)
+        layout.addWidget(self._uPbWidget, 1, 0)
+        layout.addWidget(self._pbPbWidget, 2, 0)
 
-        box = QGroupBox("CSV layout")
-        layout = QFormLayout()
-        layout.addRow(QLabel("Has headers"), self.hasHeadersCB)
-        layout.addRow(QLabel("Column delimiter"), self.delimiterEntry)
-        layout.addRow(QLabel(""))
-        layout.addRow(QLabel("Columns"))
-        layout.addRow(QLabel(stringUtils.U_PB_STR), uPbColumnLayout)
-        layout.addRow(QLabel(stringUtils.PB_PB_STR), pbPbColumnLayout)
-        box.setLayout(layout)
-        return box
+        widget = QWidget()
+        widget.setLayout(layout)
+        return widget
 
     ################
     ## Validation ##
     ################
 
+    def _updateColumnRefs(self, newRefType):
+        self._uPbWidget.changeColumnReferenceType(newRefType)
+        self._pbPbWidget.changeColumnReferenceType(newRefType)
+
     def _createSettings(self):
         settings = LeadLossImportSettings()
-        settings.delimiter = self.delimiterEntry.text()
-        settings.hasHeaders = self.hasHeadersCB.isChecked()
-        settings.uPbColumn = self.uPbColumnEntry.text()
-        settings.uPbErrorColumn = self.uPbErrorColumnEntry.text()
-        settings.pbPbColumn = self.pbPbColumnEntry.text()
-        settings.pbPbErrorColumn = self.pbPbErrorColumnEntry.text()
-        settings.inputErrorSigmas = stringUtils.ERROR_SIGMA_OPTIONS[self.inputSigmasRB.checkedId()]
-        settings.inputErrorType = stringUtils.ERROR_TYPE_OPTIONS[self.inputTypeRB.checkedId()]
+        settings.delimiter = self._generalSettingsWidget.getDelimiter()
+        settings.hasHeaders = self._generalSettingsWidget.getHasHeaders()
+        settings.columnReferenceType = self._generalSettingsWidget.getColumnReferenceType()
+
+        settings._columnRefs = {
+            Column.U_PB_VALUE: self._uPbWidget.getValueColumn(),
+            Column.U_PB_ERROR: self._uPbWidget.getErrorColumn(),
+            Column.PB_PB_VALUE: self._pbPbWidget.getValueColumn(),
+            Column.PB_PB_ERROR: self._pbPbWidget.getErrorColumn()
+        }
+
+        print(settings._columnRefs)
+
+        settings.uPbErrorType = self._uPbWidget.getErrorType()
+        settings.uPbErrorSigmas = self._uPbWidget.getErrorSigmas()
+        settings.pbPbErrorType = self._pbPbWidget.getErrorType()
+        settings.pbPbErrorSigmas = self._pbPbWidget.getErrorSigmas()
         return settings

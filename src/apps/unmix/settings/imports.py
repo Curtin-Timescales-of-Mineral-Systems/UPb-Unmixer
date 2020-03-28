@@ -46,13 +46,4 @@ class UnmixImportSettings(AbstractImportSettings):
     ## Validation ##
 
     def validate(self):
-        if not all(self._columnRefs.values()):
-            return "Must enter a value for each column"
-
-        displayColumns = self.getDisplayColumns()
-        if len(set(displayColumns)) != len(displayColumns):
-            return "Columns should not contain duplicates"
-
-        self.delimiter = ","
-
-        return None
+        return super().validate()

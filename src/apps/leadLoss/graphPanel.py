@@ -33,13 +33,18 @@ class LeadLossGraphPanel(AbstractGraphPanel):
 
         self.mouseOnStatisticsAxes = False
 
+    def _getCitationText(self):
+        return "Hugo K.H. Olierook, Christopher L. Kirkland, ???, " \
+               "Matthew L. Daggitt, ??? " \
+               "<b>PAPER TITLE</b>, 2020"
+
+
     def createGraph(self):
         widget = QWidget()
         fig = plt.figure()
-        self.concordiaAxis = plt.subplot(221)
-        self.statisticAxis = plt.subplot(222)
-        self.concordantAxis = plt.subplot(223)
-        self.discordantAxis = plt.subplot(224)
+        self.concordiaAxis = plt.subplot(211)
+        self.statisticAxis = plt.subplot(223)
+        self.histogramAxis = plt.subplot(224)
 
         plt.subplots_adjust(hspace = 0.9, wspace=0.4)
 
@@ -59,8 +64,7 @@ class LeadLossGraphPanel(AbstractGraphPanel):
         self.cid3 = fig.canvas.mpl_connect('axes_leave_event', self.onMouseExitAxes)
 
         self.plotConcordia()
-        self.plotConcordantHistogram([])
-        self.plotDiscordantHistogram([])
+        self.plotHistogram([], [])
         self.plotStatistics({})
         return widget
 
@@ -81,40 +85,42 @@ class LeadLossGraphPanel(AbstractGraphPanel):
         dxs = []
         dys = []
         for row in rows:
-            (cxs if row.concordant else dxs).append(row.importedCellsByCol[Column.U_PB].value)
-            (cys if row.concordant else dys).append(row.importedCellsByCol[Column.PB_PB].value)
+            (cxs if row.concordant else dxs).append(row.importedCellsByCol[Column.U_PB_VALUE].value)
+            (cys if row.concordant else dys).append(row.importedCellsByCol[Column.PB_PB_VALUE].value)
 
         self.concordiaAxis.concordantDataPoints.set_data(cxs,cys)
         self.concordiaAxis.discordantDataPoints.set_data(dxs,dys)
 
-    def plotConcordantHistogram(self, values):
+    def _scale(self, values):
         scaledValues = [v/(10**6) for v in values]
-        if values:
-            weights = [1/len(values)]*len(values)
-        else:
-            weights = []
+        weights = [1/len(values)]*len(values) if values else []
+        return scaledValues, weights
 
-        self.concordantAxis.clear()
-        self.concordantAxis.set_title("Concordant distribution")
-        self.concordantAxis.set_xlabel("Age (Ma)")
-        self.concordantAxis.set_xlim(*self._age_xlim)
-        self.concordantAxis.set_ylim(0, 1.0)
-        self.concordantAxis.hist(scaledValues, bins=self._bars, cumulative=True, weights=weights, range=(self._barMin, self._barMax))
+    def plotHistogram(self, concordantValues, discordantValues):
+        scaledConcordantValues, concordantWeights = self._scale(concordantValues)
+        scaledDiscordantValues, discordantWeights = self._scale(discordantValues)
+
+        self.histogramAxis.clear()
+        self.histogramAxis.set_title("Concordant distribution")
+        self.histogramAxis.set_xlabel("Age (Ma)")
+        self.histogramAxis.set_xlim(*self._age_xlim)
+        self.histogramAxis.set_ylim(0, 1.0)
+        self.histogramAxis.hist(
+            scaledConcordantValues,
+            bins=self._bars,
+            cumulative=True,
+            weights=concordantWeights,
+            range=(self._barMin, self._barMax)
+        )
+        self.histogramAxis.hist(
+            scaledDiscordantValues,
+            bins=self._bars,
+            cumulative=True,
+            weights=discordantWeights,
+            range=(self._barMin, self._barMax)
+        )
+
         self.canvas.draw()
-
-    def plotDiscordantHistogram(self, values):
-        scaledValues = [v/(10**6) for v in values]
-        if values:
-            weights = [1/len(values)]*len(values)
-        else:
-            weights = []
-
-        self.discordantAxis.clear()
-        self.discordantAxis.set_title("Discordant distribution")
-        self.discordantAxis.set_xlabel("Age (Ma)")
-        self.discordantAxis.set_xlim(*self._age_xlim)
-        self.discordantAxis.set_ylim(0, 1.0)
-        self.discordantAxis.hist(scaledValues, bins=self._bars, cumulative=True, weights=weights, range=(self._barMin, self._barMax))
 
     def plotStatistics(self, statistics):
         xs = [age/(10**6) for age in statistics.keys()]

@@ -13,6 +13,12 @@ class AbstractSettingsDialog(QDialog):
         self.setSizeGripEnabled(False)
         self._validate()
 
+    def initUI(self):
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.initMainSettings())
+        self.layout.addWidget(self.initErrorLabel())
+        self.layout.addWidget(self.initButtons())
+        self.setLayout(self.layout)
 
     ###############
     ## UI layout ##
@@ -35,6 +41,14 @@ class AbstractSettingsDialog(QDialog):
         widget.setLayout(layout)
         return widget
 
+    def initErrorLabel(self):
+        self.errorLabel = QLabel()
+        self.errorLabel.setVisible(False)
+        self.errorLabel.setStyleSheet("QLabel { color : red; }")
+        self.errorLabel.setWordWrap(True)
+        self.errorLabel.setAlignment(Qt.AlignCenter)
+        return self.errorLabel
+
     ################
     ## Validation ##
     ################
@@ -42,7 +56,11 @@ class AbstractSettingsDialog(QDialog):
     def _validate(self):
         settings = self._createSettings()
         error = settings.validate()
+
         self.okButton.setEnabled(error is None)
+        self.errorLabel.setVisible(error is not None)
+        if error is not None:
+            self.errorLabel.setText(error)
         self.settings = settings
 
     def createLabelWithHelp(self, labelText, helpText):

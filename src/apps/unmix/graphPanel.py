@@ -23,15 +23,10 @@ class UnmixGraphPanel(AbstractGraphPanel):
     def __init__(self, controller, *args, **kwargs):
         super().__init__("Concordia plot", *args, **kwargs)
 
-    def createCitation(self):
-        label = QLabel(
-            "Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham, Matthew L. Daggitt, Julie Hollis, Michael Hartnady "
-            "<b>Unmixing U-Pb ages from core–rim mixtures</b>, 2020"
-        )
-        label.setWordWrap(True)
-        label.setTextFormat(Qt.RichText)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse);
-        return label
+    def _getCitationText(self):
+        return "Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham, " \
+               "Matthew L. Daggitt, Julie Hollis, Michael Hartnady" \
+               "<b>Unmixing U-Pb ages from core–rim mixtures</b>, 2020"
 
     def createGraph(self):
         widget = QWidget()

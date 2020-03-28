@@ -1,5 +1,6 @@
 from apps.abstract.application import AbstractApplication
 from apps.unmix.controller import UnmixTabController
+from utils import config
 
 
 class UPbUnmixerApplication(AbstractApplication):
@@ -9,7 +10,7 @@ class UPbUnmixerApplication(AbstractApplication):
 
     @staticmethod
     def getTitle():
-        return "U-Pb Unmixer"
+        return config.U_PB_UNMIXER_TITLE
 
     @staticmethod
     def getVersion():

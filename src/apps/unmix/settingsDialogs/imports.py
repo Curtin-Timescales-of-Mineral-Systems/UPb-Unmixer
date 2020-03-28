@@ -18,10 +18,10 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
     ## UI layout ##
     ###############
 
-    def initCSVSettings(self):
+    def initMainSettings(self):
         # Defaults
         defaults = self.defaultSettings
-        columnRefs = self.defaultSettings.getDisplayColumnsAsStrings()
+        columnRefs = self.defaultSettings.getDisplayColumnsByRefs()
 
         self._generalSettingsWidget = GeneralSettingsWidget(self._validate, defaults)
         self._generalSettingsWidget.columnRefChanged.connect(self._onColumnRefChange)
@@ -56,6 +56,8 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
             defaults.mixedPbPbErrorSigmas
         )
 
+        self._updateColumnRefs(defaults.columnReferenceType)
+
         layout = QGridLayout()
         layout.setHorizontalSpacing(15)
         layout.setVerticalSpacing(15)
@@ -67,39 +69,12 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
         widget = QWidget()
         widget.setLayout(layout)
         return widget
-        """
-        hasHeadersLabel = self.createLabelWithHelp(
-            "Has headers",
-            "Does the CSV file have an initial row of column headers?"
-        )
-        columnDelimiterLabel = self.createLabelWithHelp(
-            "Column separator",
-            "Which character is used in the CSV file to separate columns?"
-        )
-        rimAgeLabel = self.createLabelWithHelp(
-            "Rim age column",
-            "Which columns are the value and error for the rim age stored in?\n" +
-            "Columns may be specified either using letters (A, B, C, ...) or numbers (1, 2, 3, ...)"
-        )
-        uPbLabel = self.createLabelWithHelp(
-            'Mixed ' + utils.U_PB_STR + ' column',
-            "Which columns are the value and error for the mixed " + utils.U_PB_STR + " ratio stored in?\n" +
-            "Columns may be specified either using letters (A, B, C, ...) or numbers (1, 2, 3, ...)"
-        )
-        pbPbLabel = self.createLabelWithHelp(
-            'Mixed ' + utils.U_PB_STR + ' column',
-            "Which columns are the value and error for the mixed " + utils.PB_PB_STR + " ratio stored in?\n" +
-            "Columns may be specified either using letters (A, B, C, ...) or numbers (1, 2, 3, ...)"
-        )
-        """
-        return box
 
     ################
     ## Validation ##
     ################
 
-    def _onColumnRefChange(self, button):
-        newRefType = ColumnReferenceType(button.option)
+    def _updateColumnRefs(self, newRefType):
         self._rimAgeWidget.changeColumnReferenceType(newRefType)
         self._mixedUPbWidget.changeColumnReferenceType(newRefType)
         self._mixedPbPbWidget.changeColumnReferenceType(newRefType)
@@ -108,6 +83,7 @@ class UnmixImportSettingsDialog(AbstractImportSettingsDialog):
         settings = UnmixImportSettings()
         settings.delimiter = self._generalSettingsWidget.getDelimiter()
         settings.hasHeaders = self._generalSettingsWidget.getHasHeaders()
+        settings.columnReferenceType = self._generalSettingsWidget.getColumnReferenceType()
 
         settings._columnRefs = {
             Column.RIM_AGE_VALUE: self._rimAgeWidget.getValueColumn(),

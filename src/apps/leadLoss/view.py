@@ -32,9 +32,9 @@ class LeadLossView(AbstractView):
     ## Events ##
     ############
 
-    def onNewConcordantPoints(self, rows, concordantAges):
+    def onNewlyClassifiedPoints(self, rows, concordantAges, discordantAges):
         self.graphPanel.plotDataPointsOnConcordiaAxis(rows)
-        self.graphPanel.plotConcordantHistogram(concordantAges)
+        self.graphPanel.plotHistogram(concordantAges, discordantAges)
 
     def onNewStatistics(self, statistics):
         self.graphPanel.plotStatistics(statistics)

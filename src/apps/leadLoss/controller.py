@@ -1,3 +1,7 @@
+import sys
+import traceback
+
+from apps.leadLoss.helpDialog import LeadLossHelpDialog
 from utils.async import UFloatAsyncTask, AsyncTask
 from utils.settings import Settings
 from apps.abstract.controller import AbstractTabController
@@ -58,6 +62,13 @@ class LeadLossTabController(AbstractTabController):
     ## Other ##
     ###########
 
+    def showHelp(self):
+        dialog = LeadLossHelpDialog()
+        dialog.exec_()
+
     def cheatLoad(self):
-        inputFile = "/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests/leadLossTest2.csv"
-        self._importCSV(inputFile, Settings.get(TabType.LEAD_LOSS, SettingsType.IMPORT))
+        try:
+            inputFile = "../tests/leadLossTest2.csv"
+            self._importCSV(inputFile, Settings.get(TabType.LEAD_LOSS, SettingsType.IMPORT))
+        except:
+            print(traceback.format_exc(), file=sys.stderr)
