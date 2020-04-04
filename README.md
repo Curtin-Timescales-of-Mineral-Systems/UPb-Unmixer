@@ -3,6 +3,7 @@
 ## U-Pb Unmixer
 
 ![Executables built](https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/workflows/Python%20executables/badge.svg)
+[![DOI](https://zenodo.org/badge/252923972.svg)](https://zenodo.org/badge/latestdoi/252923972)
 
 This program accompanies the paper "Unmixing U-Pb ages from core-rim mixtures". 
 
