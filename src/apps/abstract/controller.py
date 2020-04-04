@@ -1,18 +1,21 @@
+from apps.abstract.model.signals import Signals
 from utils import csvUtils
-from utils.async import AsyncPyQTSignals, AsyncTask
+from utils.async import AsyncTask
 from utils.settings import Settings
 from apps.type import SettingsType
 
 
 class AbstractTabController:
 
-    def __init__(self, tabType):
-        self.tabType = tabType
+    def __init__(self, applicationType):
+        self.applicationType = applicationType
         self.worker = None
 
-        self.signals = AsyncPyQTSignals()
-        self.signals.cancelled.connect(self.onProcessingCancelled)
-        self.signals.errored.connect(self.onProcessingErrored)
+        self.signals = Signals()
+        self.signals.processingProgress.connect(self.onProcessingProgress)
+        self.signals.processingCompleted.connect(self.onProcessingCompleted)
+        self.signals.processingCancelled.connect(self.onProcessingCancelled)
+        self.signals.processingErrored.connect(self.onProcessingErrored)
 
     ############
     ## Import ##
@@ -51,32 +54,20 @@ class AbstractTabController:
             return
         Settings.update(processingSettings)
 
-        self.onProcessingStart()
-
-        importSettings = Settings.get(self.tabType, SettingsType.IMPORT)
-        calculationSettings = Settings.get(self.tabType, SettingsType.CALCULATION)
-        headers = importSettings.getHeaders() + calculationSettings.getHeaders()
-        self.view.onHeadersUpdated(headers)
+        self.signals.processingStarted.emit()
+        self.signals.taskStarted.emit("Processing data...")
 
         self.model.resetCalculations()
-        self.view.onAllRowsUpdated(self.model.rows)
-
         self._process(processingSettings)
 
-
     def _process(self, calculationSettings):
-        self.signals.progress.connect(self.onProcessingProgress)
-        self.signals.completed.connect(self.onProcessingCompleted)
 
-        importSettings = Settings.get(self.tabType, SettingsType.IMPORT)
+        importSettings = Settings.get(self.applicationType, SettingsType.IMPORT)
         self.worker = AsyncTask(self.signals, self.model.getProcessingFunction(), self.model.getProcessingData(), importSettings, calculationSettings)
         self.worker.start()
 
     def onProcessingCompleted(self, output):
-        self.signals.progress.disconnect(self.onProcessingProgress)
-        self.signals.completed.disconnect(self.onProcessingCompleted)
-        self.view.onProcessingCompleted()
-
+        self.signals.taskComplete.emit(True, "Processing complete")
         self.model.addProcessingOutput(output)
 
     def cancelProcessing(self):
@@ -94,11 +85,8 @@ class AbstractTabController:
     ## Utils ##
     ###########
 
-    def onProcessingStart(self):
-        self.view.onProcessingStart()
-
     def onProcessingCancelled(self):
-        self.view.onProcessingCancelled()
+        self.signals.taskComplete.emit(False, "Cancelled processing of data")
 
     def onProcessingErrored(self, exception):
-        self.view.onProcessingErrored(exception)
+        self.signals.taskComplete.emit(False, "Error whilst processing data")

@@ -10,9 +10,13 @@ from utils.ui import uiUtils
 
 class StatusBarWidget(QWidget):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, signals, *args, **kwargs):
         super(StatusBarWidget, self).__init__(*args, **kwargs)
         self.initUI()
+
+        signals.taskStarted.connect(self.onTaskStarted)
+        signals.taskProgress.connect(self.onTaskProgress)
+        signals.taskComplete.connect(self.onTaskComplete)
 
 
     def initUI(self):
@@ -43,16 +47,16 @@ class StatusBarWidget(QWidget):
 
         self.setLayout(layout)
 
-    def startTask(self, text):
+    def onTaskStarted(self, text):
         self.progressBar.show()
         self.text.setText(text)
         self.icon.hide()
-        self.updateTask(0)
+        self.onTaskProgress(0)
 
-    def updateTask(self, value):
-        self.progressBar.setValue(int(value * 100))
+    def onTaskProgress(self, progress):
+        self.progressBar.setValue(int(progress * 100))
 
-    def endTask(self, success, text):
+    def onTaskComplete(self, success, text):
         self.progressBar.hide()
         self.text.setText(text)
         self.text.adjustSize()

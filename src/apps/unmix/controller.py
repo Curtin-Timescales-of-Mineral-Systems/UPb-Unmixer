@@ -1,22 +1,16 @@
-from pathlib import Path
-
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QLabel, QDialog, QVBoxLayout, QTabWidget, QWidget
-
-from apps.unmix.helpDialog import UnmixHelpDialog
-from utils import csvUtils, calculations
+from apps.unmix.view.helpDialog import UnmixHelpDialog
+from utils import csvUtils
 from utils.settings import Settings
 from apps.abstract.controller import AbstractTabController
-from apps.type import TabType, SettingsType
-from apps.unmix.model import UnmixModel
-from apps.unmix.view import UnmixView
-from utils.stringUtils import U_PB_STR
+from apps.type import ApplicationType, SettingsType
+from apps.unmix.model.model import UnmixModel
+from apps.unmix.view.view import UnmixView
 
 
 class UnmixTabController(AbstractTabController):
 
     def __init__(self):
-        super().__init__(TabType.UNMIX)
+        super().__init__(ApplicationType.UNMIX)
 
         self.name = "Unmix rim/core"
         self.view = UnmixView(self)
@@ -35,7 +29,7 @@ class UnmixTabController(AbstractTabController):
 
         self.view.startTask("Exporting CSV file")
 
-        settings = Settings.get(TabType.UNMIX, SettingsType.CALCULATION)
+        settings = Settings.get(ApplicationType.UNMIX, SettingsType.CALCULATION)
         headers, rows = self.model.getExportData(settings)
 
         try:
@@ -60,7 +54,7 @@ class UnmixTabController(AbstractTabController):
 
     def selectRows(self, rowIndices):
         rows = [self.model.rows[i] for i in rowIndices]
-        calculationSettings = Settings.get(self.tabType, SettingsType.CALCULATION)
+        calculationSettings = Settings.get(self.applicationType, SettingsType.CALCULATION)
         self.view.graphPanel.displayRows(rows, calculationSettings)
 
     def showHelp(self):
@@ -74,6 +68,6 @@ class UnmixTabController(AbstractTabController):
     def cheatLoad(self):
         #inputFile = "/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests/unmixTest.csv"
         inputFile = "C:/Users/mdagg/Documents/Programming/CurtinConcordia/tests/unmixTest.csv"
-        self._importCSV(inputFile, Settings.get(TabType.UNMIX, SettingsType.IMPORT))
+        self._importCSV(inputFile, Settings.get(ApplicationType.UNMIX, SettingsType.IMPORT))
         #self.view.getSettings(SettingsType.IMPORT, self._importCSVWithSettings)
 

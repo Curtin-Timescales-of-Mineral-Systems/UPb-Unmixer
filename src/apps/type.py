@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TabType(Enum):
+class ApplicationType(Enum):
     UNMIX = 1
     LEAD_LOSS = 2
 

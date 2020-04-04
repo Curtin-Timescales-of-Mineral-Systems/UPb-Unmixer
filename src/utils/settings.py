@@ -2,12 +2,12 @@ import pickle
 from os import path
 
 from utils import stringUtils
-from apps.leadLoss.settings.exports import LeadLossExportSettings
-from apps.leadLoss.settings.imports import LeadLossImportSettings
-from apps.leadLoss.settings.calculation import LeadLossCalculationSettings
-from apps.unmix.settings.exports import UnmixExportSettings
-from apps.unmix.settings.imports import UnmixImportSettings
-from apps.unmix.settings.calculation import UnmixCalculationSettings
+from apps.leadLoss.model.settings.exports import LeadLossExportSettings
+from apps.leadLoss.model.settings.imports import LeadLossImportSettings
+from apps.leadLoss.model.settings.calculation import LeadLossCalculationSettings
+from apps.unmix.model.settings.exports import UnmixExportSettings
+from apps.unmix.model.settings.imports import UnmixImportSettings
+from apps.unmix.model.settings.calculation import UnmixCalculationSettings
 
 
 class Settings:

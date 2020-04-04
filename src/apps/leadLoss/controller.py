@@ -1,59 +1,49 @@
 import sys
 import traceback
 
-from apps.leadLoss.helpDialog import LeadLossHelpDialog
-from utils.async import UFloatAsyncTask, AsyncTask
+from apps.leadLoss.view.helpDialog import LeadLossHelpDialog
+from apps.leadLoss.process.processing import ProgressType
 from utils.settings import Settings
 from apps.abstract.controller import AbstractTabController
-from apps.leadLoss.model import LeadLossModel
-from apps.leadLoss.view import LeadLossView
-from apps.type import TabType, SettingsType
+from apps.leadLoss.model.model import LeadLossModel
+from apps.leadLoss.view.view import LeadLossView
+from apps.type import ApplicationType, SettingsType
 
 
 class LeadLossTabController(AbstractTabController):
 
     def __init__(self):
-        super().__init__(TabType.LEAD_LOSS)
+        super().__init__(ApplicationType.LEAD_LOSS)
         self.name = "Pb loss"
+        self.model = LeadLossModel(self.signals)
         self.view = LeadLossView(self)
-        self.model = LeadLossModel(self.view)
 
         self.cheatLoad()
 
     ################
     ## Processing ##
     ################
-    """
-    def startUFloatGeneration(self):
-        ufloatInputs = []
-        for row in self.utils.rows:
-            ufloatInputs.append((row.uPbValue, row.uPbError))
-            ufloatInputs.append((row.pbPbValue, row.pbPbError))
-
-        self.signals.progress.connect(self.onUFloatGenerationProgress)
-        self.signals.completed.connect(self.onUFloatGenerationEnd)
-
-        self.worker = UFloatAsyncTask(self.signals, ufloatInputs)
-        self.worker.start()
-
-    def onUFloatGenerationProgress(self, progress):
-        super().onProcessingProgress(progress*0.8)
-
-    def onUFloatGenerationEnd(self, outputs):
-        for i, row in enumerate(self.utils.rows):
-            row.uPb = outputs[2*i]
-            row.pbPb = outputs[2*i + 1]
-
-        self.signals.progress.disconnect(self.onUFloatGenerationProgress)
-        self.signals.completed.disconnect(self.onUFloatGenerationEnd)
-
-        self.startNumericProcessing()
-    """
 
     def onProcessingProgress(self, progressArgs):
-        progress, i, row = progressArgs
-        self.model.updateRow(i, row)
-        self.view.onProcessingProgress(progress, i, row)
+        type = progressArgs[0]
+
+        if type == ProgressType.ERRORS:
+            progress, i = progressArgs[1:]
+            self.signals.taskProgress.emit(progress)
+            if progress == 1.0:
+                self.signals.taskStarted.emit("Identifying concordant points...")
+        elif type == ProgressType.CONCORDANCE:
+            progress, i, concordantAge, discordance = progressArgs[1:]
+            self.model.updateConcordance(i, discordance, concordantAge)
+            self.signals.taskProgress.emit(progress)
+            if progress == 1.0:
+                self.signals.allRowsUpdated.emit(self.model.rows)
+                self.signals.taskStarted.emit("Sampling rim age distribution...")
+        elif type == ProgressType.SAMPLING:
+            progress, i = progressArgs[1:]
+            self.signals.taskProgress.emit(progress)
+        #self.model.updateRow(i, row)
+        #self.view.onProcessingProgress(progress, i, row)
 
     def selectAgeToCompare(self, age):
         self.model.selectAgeToCompare(age)
@@ -69,6 +59,6 @@ class LeadLossTabController(AbstractTabController):
     def cheatLoad(self):
         try:
             inputFile = "../tests/leadLossTest2.csv"
-            self._importCSV(inputFile, Settings.get(TabType.LEAD_LOSS, SettingsType.IMPORT))
+            self._importCSV(inputFile, Settings.get(ApplicationType.LEAD_LOSS, SettingsType.IMPORT))
         except:
             print(traceback.format_exc(), file=sys.stderr)
