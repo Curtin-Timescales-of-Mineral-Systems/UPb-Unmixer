@@ -14,6 +14,12 @@ Standalone executables for Ubuntu, Windows and MacOS are available
 [here](https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/releases). These should be downloadable
 and runnable without any further action.
 
+* The executable may take up to 30 seconds to show the window the first time you run the program. Subsequent runs
+should be faster.
+
+* On Ubuntu it may be necessary to change the file permissions to make it executable. This can either be done via
+`chmod 755` or by right clicking on the file and going `Properties` -> `Permissions`.
+
 #### Running the Python code directly
 
 The source code for each release is available 
