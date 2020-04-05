@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QRadioButton, QButtonGroup
 
 from utils import stringUtils
-from utils.ui.radioButtons import RadioButtons
 
 
 class ErrorTypeInput(QWidget):

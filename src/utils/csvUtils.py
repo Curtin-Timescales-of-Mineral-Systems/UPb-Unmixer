@@ -47,9 +47,12 @@ def columnLettersToNumber(letters, zeroIndexed):
             digit = _letterToNumber(char)
             exponent = len(letters) - i - 1
             number += digit * (26 ** exponent)
-    if zeroIndexed:
-        number -= 1
-    return number
+        if zeroIndexed:
+            number -= 1
+        return number
+
+    raise Exception("Unexpected value " + letters)
+
 
 def convertColumnRef(ref, columnRefType, zeroIndexed):
     if columnRefType is ColumnReferenceType.NUMBERS:
@@ -57,6 +60,7 @@ def convertColumnRef(ref, columnRefType, zeroIndexed):
     if columnRefType is ColumnReferenceType.LETTERS:
         return columnNumberToLetters(ref, zeroIndexed)
     raise Exception("Unexpected ColumnReferenceType: " + str(columnRefType))
+
 
 def _letterToNumber(letter):
     return ord(letter) - 64
@@ -87,10 +91,12 @@ def read_input(input_file, settings):
     for line in lines:
         if largestColumnNumberAskedFor >= len(line):
             largestColumnRefAvailable = convertColumnRef(len(line), settings.columnReferenceType, False)
-            largestColumnRefAskedFor = convertColumnRef(largestColumnNumberAskedFor+1, settings.columnReferenceType, False)
+            largestColumnRefAskedFor = convertColumnRef(largestColumnNumberAskedFor + 1, settings.columnReferenceType,
+                                                        False)
             raise Exception(
                 "Invalid column reference. Asked for column " + str(largestColumnRefAskedFor) + " but the CSV file only"
-                " goes up to column " + str(largestColumnRefAvailable) + "."
+                                                                                                " goes up to column " + str(
+                    largestColumnRefAvailable) + "."
             )
 
     return headers, rows

@@ -3,20 +3,22 @@ Provides an abstraction over the different methods of error propagation during
 mathematical calculations
 """
 
-#import uncertainties as fo
-#import uncertainties.umath as fo_math
+# import uncertainties as fo
+# import uncertainties.umath as fo_math
 import soerp as so
 import soerp.umath as so_math
-#import mcerp as mc
-#import mcerp.umath as mc_math
+# import mcerp as mc
+# import mcerp.umath as mc_math
 import math
 
-#mc.npts = config.MONTE_CARLO_SAMPLES
+# mc.npts = config.MONTE_CARLO_SAMPLES
 error_order = 2
+
 
 def set_order(order):
     global error_order
     error_order = order
+
 
 def ufloat(mean, stddev):
     if stddev == 0:
@@ -30,6 +32,7 @@ def ufloat(mean, stddev):
         return mc.N(mean, stddev)
     """
 
+
 def value(x):
     if isinstance(x, float):
         return x
@@ -41,6 +44,7 @@ def value(x):
     if error_order == "mc":
         return x.mean
     """
+
 
 def stddev(x):
     if isinstance(x, float):
@@ -54,8 +58,9 @@ def stddev(x):
         return math.sqrt(x.var)
     """
 
+
 def log(x):
-    if isinstance(x , float):
+    if isinstance(x, float):
         return math.log(x)
     if error_order == 2:
         return so_math.ln(x)
@@ -65,6 +70,7 @@ def log(x):
     if error_order == "mc":
         return mc_math.ln(x)
     """
+
 
 def exp(x):
     if isinstance(x, float):
@@ -77,6 +83,7 @@ def exp(x):
     if error_order == "mc":
         return mc_math.exp(x)
     """
+
 
 def printVariable(name, x):
     print("(order " + str(error_order) + ") " + name + " = " + str(value(x)) + " +/- " + str(stddev(x)))

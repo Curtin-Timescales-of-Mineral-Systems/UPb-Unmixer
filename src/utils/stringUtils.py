@@ -3,7 +3,6 @@ import math
 ###############
 ## Constants ##
 ###############
-from PyQt5.QtCore import QRegExp
 
 U_PB_STR = "²³⁸U/²⁰⁶Pb"
 PB_PB_STR = "²⁰⁷Pb/²⁰⁶Pb"
@@ -56,11 +55,11 @@ def print_progress_bar (iteration, total, prefix = 'Progress', suffix = '', deci
 def get_error_sigmas_str(sigmas):
     return str(sigmas) + "σ"
 
-def get_error_str(sigmas, type):
-    return get_error_sigmas_str(sigmas) + " " + error_symbol(type, brackets=True)
+def get_error_str(sigmas, error_type):
+    return get_error_sigmas_str(sigmas) + " " + error_symbol(error_type, brackets=True)
 
-def error_symbol(type, brackets=False):
-    if type != "Percentage":
+def error_symbol(error_type, brackets=False):
+    if error_type != "Percentage":
         return ""
     if brackets:
         return "(%)"

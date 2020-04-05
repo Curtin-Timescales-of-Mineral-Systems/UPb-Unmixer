@@ -1,9 +1,7 @@
-from enum import Enum
-
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLineEdit, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout
 
-from utils import stringUtils, csvUtils
+from utils import csvUtils
 from utils.csvUtils import ColumnReferenceType
 from utils.ui import uiUtils
 

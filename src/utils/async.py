@@ -15,7 +15,9 @@ class SignalType(Enum):
 """
 An object that the child process uses to send information to the PyQT thread
 """
-class ProcessSignals():
+
+
+class ProcessSignals:
     def __init__(self):
         self.queue = Queue()
         self._halt = Value('i', 0)
@@ -37,6 +39,7 @@ class ProcessSignals():
 
     def setHalt(self):
         self._halt.value = 1
+
 
 # Can't be part of AsyncTask as this function must be picklable under windows:
 # (see https://docs.python.org/2/library/multiprocessing.html#windows)

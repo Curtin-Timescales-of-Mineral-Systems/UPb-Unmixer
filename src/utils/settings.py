@@ -2,12 +2,9 @@ import pickle
 from os import path
 
 from utils import stringUtils
-from apps.leadLoss.model.settings.exports import LeadLossExportSettings
-from apps.leadLoss.model.settings.imports import LeadLossImportSettings
-from apps.leadLoss.model.settings.calculation import LeadLossCalculationSettings
-from apps.unmix.model.settings.exports import UnmixExportSettings
-from apps.unmix.model.settings.imports import UnmixImportSettings
-from apps.unmix.model.settings.calculation import UnmixCalculationSettings
+from model.settings.exports import UnmixExportSettings
+from model.settings.imports import UnmixImportSettings
+from model.settings.calculation import UnmixCalculationSettings
 
 
 class Settings:
@@ -17,17 +14,13 @@ class Settings:
         self.contents = {
             UnmixImportSettings.KEY: UnmixImportSettings(),
             UnmixCalculationSettings.KEY: UnmixCalculationSettings(),
-            UnmixExportSettings.KEY: UnmixExportSettings(),
-
-            LeadLossImportSettings.KEY: LeadLossImportSettings(),
-            LeadLossCalculationSettings.KEY: LeadLossCalculationSettings(),
-            LeadLossExportSettings.KEY: LeadLossExportSettings(),
+            UnmixExportSettings.KEY: UnmixExportSettings()
         }
 
     @classmethod
-    def get(cls, tabType, settingsType):
+    def get(cls, settingsType):
         cls.__ensureInstance()
-        return cls.__instance.contents[(tabType, settingsType)]
+        return cls.__instance.contents[settingsType]
         # raise Exception("Unknown tab and settingsDialogs: " + type(tabType) + " " + type(settingsType))]
 
     @classmethod
@@ -52,9 +45,9 @@ class Settings:
     @staticmethod
     def load():
         if path.exists(stringUtils.SAVE_FILE):
-            with open(stringUtils.SAVE_FILE, 'rb') as input:
+            with open(stringUtils.SAVE_FILE, 'rb') as inputFile:
                 try:
-                    return pickle.load(input)
+                    return pickle.load(inputFile)
                 except Exception as e:
                     print(e)
 

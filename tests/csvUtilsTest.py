@@ -1,6 +1,7 @@
 import unittest
 from utils.csvUtils import *
 
+
 class CSVUtilsMethods(unittest.TestCase):
 
     def testColumnLettersToNumbers(self):
@@ -16,7 +17,7 @@ class CSVUtilsMethods(unittest.TestCase):
         self.assertEqual(columnLettersToNumber("AB", True), 27)
         self.assertEqual(columnLettersToNumber("BA", True), 52)
 
-    def testColumnLettersToNumbers(self):
+    def testColumnNumberToLetters(self):
         self.assertEqual(columnNumberToLetters(1, False), "A")
         self.assertEqual(columnNumberToLetters(2, False), "B")
         self.assertEqual(columnNumberToLetters(27, False), "AA")
@@ -28,6 +29,7 @@ class CSVUtilsMethods(unittest.TestCase):
         self.assertEqual(columnNumberToLetters(26, True), "AA")
         self.assertEqual(columnNumberToLetters(27, True), "AB")
         self.assertEqual(columnNumberToLetters(52, True), "BA")
+
 
 if __name__ == '__main__':
     unittest.main()

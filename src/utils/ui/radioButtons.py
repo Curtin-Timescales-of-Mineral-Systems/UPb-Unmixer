@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QButtonGroup, QHBoxLayout, QRadioButton, QGridLayout
+from PyQt5.QtWidgets import QWidget, QButtonGroup, QRadioButton, QGridLayout
 
 
 class RadioButtons(QWidget):
@@ -22,7 +22,8 @@ class RadioButtons(QWidget):
 
         self.setLayout(layout)
 
-    def _calculate_coordinates(self, i, rows, cols):
+    @staticmethod
+    def _calculate_coordinates(i, rows, cols):
         if cols is None:
             return 0, i
         if rows is None:

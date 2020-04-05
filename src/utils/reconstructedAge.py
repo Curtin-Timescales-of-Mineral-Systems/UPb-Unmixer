@@ -1,9 +1,8 @@
-
-class ReconstructedAge():
+class ReconstructedAge:
     def __init__(self, values, minValues, maxValues):
         self.values = list(values)
-        self.minValues = list(minValues) if minValues else [None]*3
-        self.maxValues = list(maxValues) if maxValues else [None]*3
+        self.minValues = list(minValues) if minValues else [None] * 3
+        self.maxValues = list(maxValues) if maxValues else [None] * 3
         self.fullyValid = minValues is not None and maxValues is not None
 
         # Swap uPb values as they are inverted
@@ -29,10 +28,10 @@ class ReconstructedAge():
 
         minValue = self.minValues[i]
         if minValue:
-            minValue = value - scale*minValue
+            minValue = value - scale * minValue
 
         maxValue = self.maxValues[i]
         if maxValue:
-            maxValue = scale*self.maxValues[i] - value
+            maxValue = scale * self.maxValues[i] - value
 
         return value, minValue, maxValue
