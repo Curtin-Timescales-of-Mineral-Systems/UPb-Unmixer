@@ -3,8 +3,7 @@
 This repository contains various Python applications for the analysis of UPb ratios using concordia plots.
 ## U-Pb Unmixer
 
-![Building](https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/workflows/%20Python%20executables/badge.svg)
-
+![Executables built](https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/workflows/Python%20executables/badge.svg)
 
 This program accompanying the paper "Unmixing U-Pb ages from core-rim mixtures". 
 
