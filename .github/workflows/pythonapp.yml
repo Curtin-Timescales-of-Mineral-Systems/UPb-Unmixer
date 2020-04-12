@@ -105,7 +105,7 @@ jobs:
       - name: Build with pyinstaller
         shell: bash
         run: |
-          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --add-data '${{ matrix.RESOURCES }}' --icon=./resources/unmix_icon.ico src/UPb_Unmixer.py
+          pyinstaller --onefile --hidden-import='pkg_resources.py2_warn' --add-data '${{ matrix.RESOURCES }}' --icon=./resources/icon.ico src/UPb_Unmixer.py
 
       - name: Upload release asset
         id: upload-release-asset
