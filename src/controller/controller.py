@@ -24,8 +24,6 @@ class UnmixTabController:
 
         self.worker = None
 
-        self.cheatLoad()
-
     ###########
     # Actions #
     ###########
