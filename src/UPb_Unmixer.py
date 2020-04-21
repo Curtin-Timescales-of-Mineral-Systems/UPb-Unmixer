@@ -44,7 +44,7 @@ class UPbUnmixerApplication:
 
     @staticmethod
     def getIcon():
-        return "../resources/unmix_icon.ico"
+        return "../resources/icon.ico"
 
     @staticmethod
     def createController():
