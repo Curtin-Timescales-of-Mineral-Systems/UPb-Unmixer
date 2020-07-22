@@ -4,7 +4,7 @@
 
 # App titles
 U_PB_UNMIXER_TITLE = "U-Pb Unmixer"
-LEAD_LOSS_TITLE = "Lead loss"
+VERSION = "1.1"
 
 # Size of the confidence interval -- 1 or 2
 SIGMAS_MIXED_POINT_ERROR = 1

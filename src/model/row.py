@@ -3,65 +3,59 @@ from model.column import Column
 from model.settings.calculation import UnmixCalculationSettings
 from utils import calculations, errorUtils
 
-
 class Row:
     def __init__(self, importedValues, importSettings):
         self.rawImportedValues = importedValues
         self.calculatedValues = None
+        self.calculatedCells = None
         self.processed = False
-        self.calculatedCellSpecs = UnmixCalculationSettings.getCalculatedColumnSpecs()
+        self.rejected = False
 
         displayedImportedColumns = importSettings.getDisplayColumnsWithRefs()
         self.importedCells = [ImportedCell(importedValues[i]) for _, i in displayedImportedColumns]
-        self.importedCellsByCol = {col: self.importedCells[j] for j, (col, _) in enumerate(displayedImportedColumns)}
         self.validImports = all(cell.isValid() for cell in self.importedCells)
         self.resetCalculatedCells()
 
         self.processed = False
         self.validOutput = False
 
+        if not self.validImports:
+            return
+
+        values = {col: self.importedCells[j].value for j, (col, _) in enumerate(displayedImportedColumns)}
+
+        self.rimAgeValue = values[Column.RIM_AGE_VALUE]
+        rimAgeRawError = values[Column.RIM_AGE_ERROR]
+        self.rimAgeStDev = calculations.convert_to_stddev(self.rimAgeValue, rimAgeRawError, importSettings.rimAgeErrorType, importSettings.rimAgeErrorSigmas)
+
+        self.mixedUPbValue = values[Column.MIXED_U_PB_VALUE]
+        mixedUPbRawError = values[Column.MIXED_U_PB_ERROR]
+        self.mixedUPbStDev = calculations.convert_to_stddev(self.mixedUPbValue, mixedUPbRawError, importSettings.mixedUPbErrorType, importSettings.mixedUPbErrorSigmas)
+
+        self.mixedPbPbValue = values[Column.MIXED_PB_PB_VALUE]
+        mixedPbPbRawError = values[Column.MIXED_PB_PB_ERROR]
+        self.mixedPbPbStDev = calculations.convert_to_stddev(self.mixedPbPbValue, mixedPbPbRawError, importSettings.mixedPbPbErrorType, importSettings.mixedPbPbErrorSigmas)
+
+        self.uConcentration = values[Column.U_CONCENTRATION]
+        self.thConcentration = values[Column.TH_CONCENTRATION]
+
     def resetCalculatedCells(self):
-        self.calculatedCells = [UncalculatedCell() for _ in self.calculatedCellSpecs]
+        self.calculatedCells = [UncalculatedCell() for _ in UnmixCalculationSettings.getCalculatedColumnHeaders()]
         self.processed = False
+        self.rejected = False
 
     def getDisplayCells(self):
         return self.importedCells + self.calculatedCells
 
-    def process(self, importSettings, calculationSettings):
+    def process(self, settings):
         self.processed = True
 
         if not self.validImports:
-            self.calculatedCells = [CalculatedCell(None) for _ in range(9)]
+            self.calculatedCells = [CalculatedCell(None) for _ in range(13)]
             return
 
-        self.rimAgeValue = self.importedCellsByCol[Column.RIM_AGE_VALUE].value
-        self.rimAgeRawError = self.importedCellsByCol[Column.RIM_AGE_ERROR].value
-        self.rimAgeStDev = calculations.convert_to_stddev(
-            self.rimAgeValue,
-            self.rimAgeRawError,
-            importSettings.rimAgeErrorType,
-            importSettings.rimAgeErrorSigmas
-        )
         rimAge = errorUtils.ufloat(self.rimAgeValue, self.rimAgeStDev) * 10 ** 6
-
-        self.mixedUPbValue = self.importedCellsByCol[Column.MIXED_U_PB_VALUE].value
-        self.mixedUPbRawError = self.importedCellsByCol[Column.MIXED_U_PB_ERROR].value
-        self.mixedUPbStDev = calculations.convert_to_stddev(
-            self.mixedUPbValue,
-            self.mixedUPbRawError,
-            importSettings.mixedUPbErrorType,
-            importSettings.mixedUPbErrorSigmas
-        )
         mixedUPb = errorUtils.ufloat(self.mixedUPbValue, self.mixedUPbStDev)
-
-        self.mixedPbPbValue = self.importedCellsByCol[Column.MIXED_PB_PB_VALUE].value
-        self.mixedPbPbRawError = self.importedCellsByCol[Column.MIXED_PB_PB_ERROR].value
-        self.mixedPbPbStDev = calculations.convert_to_stddev(
-            self.mixedPbPbValue,
-            self.mixedPbPbRawError,
-            importSettings.mixedPbPbErrorType,
-            importSettings.mixedPbPbErrorSigmas
-        )
         mixedPbPb = errorUtils.ufloat(self.mixedPbPbValue, self.mixedPbPbStDev)
 
         rimUPb = calculations.u238pb206_from_age(rimAge)
@@ -69,27 +63,17 @@ class Row:
 
         self.rimUPbValue = errorUtils.value(rimUPb)
         self.rimUPbStDev = errorUtils.stddev(rimUPb)
-        self.rimUPbError = calculations.convert_from_stddev_with_sigmas(
-            self.rimUPbValue,
-            self.rimUPbStDev,
-            calculationSettings.outputErrorType,
-            calculationSettings.outputErrorSigmas
-        )
+        self.rimUPbError = calculations.convert_from_stddev_with_sigmas(self.rimUPbValue, self.rimUPbStDev, settings.outputErrorType, settings.outputErrorSigmas)
+
         self.rimPbPbValue = errorUtils.value(rimPbPb)
         self.rimPbPbStDev = errorUtils.stddev(rimPbPb)
-        self.rimPbPbError = calculations.convert_from_stddev_with_sigmas(
-            self.rimPbPbValue,
-            self.rimPbPbStDev,
-            calculationSettings.outputErrorType,
-            calculationSettings.outputErrorSigmas
-        )
+        self.rimPbPbError = calculations.convert_from_stddev_with_sigmas(self.rimPbPbValue, self.rimPbPbStDev, settings.outputErrorType, settings.outputErrorSigmas)
 
-        self.reconstructedAgeObj = calculations.discordant_age(rimUPb, rimPbPb, mixedUPb, mixedPbPb,
-                                                               calculationSettings.outputErrorSigmas)
+        self.reconstructedAgeObj = calculations.discordant_age(rimUPb, rimPbPb, mixedUPb, mixedPbPb, settings.outputErrorSigmas)
 
         self.validOutput = self.reconstructedAgeObj is not None
         if not self.validOutput:
-            self.calculatedCells = [CalculatedCell(None) for _ in range(9)]
+            self.calculatedCells = [CalculatedCell(None) for _ in range(13)]
             return
         self.validOutput = self.reconstructedAgeObj.fullyValid
 
@@ -97,11 +81,18 @@ class Row:
         u, u_min, u_max = self.reconstructedAgeObj.getUPb()
         p, p_min, p_max = self.reconstructedAgeObj.getPbPb()
 
+        alphaDamage = calculations.alphaDamage(self.uConcentration, self.thConcentration, t)
+        metamictScore = calculations.metamictScore(alphaDamage)
+        rimAgePrecisionScore = calculations.rimAgePrecisionScore(t, (t_max + t_min)/2)
+        coreToRimScore = calculations.coreToRimScore(self.rimUPbValue, self.rimPbPbValue, self.mixedUPbValue, self.mixedPbPbValue, u, p)
+        totalScore = metamictScore * rimAgePrecisionScore * coreToRimScore
+        self.rejected = totalScore < 0.5
+
         def getErrorCell(value, error):
             if error is None:
                 return CalculatedCell(None)
             else:
-                return CalculatedCell(calculationSettings.getOutputError(value, error))
+                return CalculatedCell(settings.getOutputError(value, error))
 
         self.calculatedCells[0] = CalculatedCell(t)
         self.calculatedCells[1] = getErrorCell(t, t_min)
@@ -114,3 +105,8 @@ class Row:
         self.calculatedCells[6] = CalculatedCell(p)
         self.calculatedCells[7] = getErrorCell(p, p_min)
         self.calculatedCells[8] = getErrorCell(p, p_max)
+
+        self.calculatedCells[9] = CalculatedCell(metamictScore)
+        self.calculatedCells[10] = CalculatedCell(rimAgePrecisionScore)
+        self.calculatedCells[11] = CalculatedCell(coreToRimScore)
+        self.calculatedCells[12] = CalculatedCell(totalScore)

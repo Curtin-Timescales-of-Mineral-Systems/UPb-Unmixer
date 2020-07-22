@@ -20,9 +20,13 @@ class UnmixGraphPanel(QGroupBox):
     def __init__(self, signals):
         super().__init__("TW concordia plot")
 
+        graphWidget = self.createGraph()
+        citationWidget = self._createCitation()
+        graphWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         layout = QVBoxLayout()
-        layout.addWidget(self.createGraph())
-        layout.addWidget(self._createCitation())
+        layout.addWidget(graphWidget)
+        layout.addWidget(citationWidget)
         self.setLayout(layout)
 
     def _createCitation(self):
@@ -41,8 +45,8 @@ class UnmixGraphPanel(QGroupBox):
         axis.set_xlabel("${}^{238}U/{}^{206}Pb$")
         axis.set_ylabel("${}^{207}Pb/{}^{206}Pb$")
 
-        maxAge = 4500
-        minAge = 200
+        maxAge = 6000
+        minAge = 1
         xMin = calculations.u238pb206_from_age(maxAge * (10 ** 6))
         xMax = calculations.u238pb206_from_age(minAge * (10 ** 6))
 
@@ -52,7 +56,7 @@ class UnmixGraphPanel(QGroupBox):
         axis.plot(xs, ys)
 
         # Plot concordia times
-        ts2 = list(range(100, minAge, 100)) + list(range(500, maxAge + 1, 500))
+        ts2 = list(range(100, 500, 100)) + list(range(500, maxAge + 1, 500))
         xs2 = [calculations.u238pb206_from_age(t * (10 ** 6)) for t in ts2]
         ys2 = [calculations.pb207pb206_from_age(t * (10 ** 6)) for t in ts2]
         axis.scatter(xs2, ys2)

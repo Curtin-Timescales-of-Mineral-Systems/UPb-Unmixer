@@ -40,7 +40,7 @@ class UPbUnmixerApplication:
 
     @staticmethod
     def getVersion():
-        return "1.0"
+        return config.VERSION
 
     @staticmethod
     def getIcon():

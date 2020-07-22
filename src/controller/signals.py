@@ -7,8 +7,8 @@ class Signals(QObject):
     # Success, file name
     csvImported = pyqtSignal([bool, str])
 
-    # Row index, row
-    rowUpdated = pyqtSignal([int, Row])
+    # Row index, row, allRows
+    rowUpdated = pyqtSignal([int, Row, list])
     # Rows
     allRowsUpdated = pyqtSignal(list)
     # Headers

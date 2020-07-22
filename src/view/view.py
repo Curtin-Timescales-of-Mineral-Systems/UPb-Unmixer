@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QSplitter, QVBoxLayout, QDialog, QMessa
 
 from utils.settings import Settings
 from model.settings.type import SettingsType
+from utils.stringUtils import pluralise
 from view.graphPanel import UnmixGraphPanel
 from view.dataPanel import UnmixDataPanel
 from view.settingsDialogs.calculation import UnmixCalculationSettingsDialog
@@ -61,7 +62,15 @@ class UnmixView(QWidget):
         )[0]
         # return '/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/data/unmixTest.csv'
 
-    def getOutputFile(self):
+    def getOutputFile(self, numberOfRejectedRows):
+        if numberOfRejectedRows != 0:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("Unreliable reconstructed ages")
+            msg.setText("The output contains " + pluralise("spot", numberOfRejectedRows) + " for which the calculated reconstructed core age has a total score of < 0.5 and therefore are deemed unreliable. We recommend that these ages are not used in further analysis.")
+            retval = msg.exec_()
+            print(retval)
+
         return QFileDialog.getSaveFileName(
             caption='Save CSV file',
             directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests'

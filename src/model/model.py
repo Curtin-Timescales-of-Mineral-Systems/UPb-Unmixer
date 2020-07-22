@@ -23,7 +23,7 @@ class UnmixModel:
 
     def updateRow(self, i, row):
         self.rows[i] = row
-        self.signals.rowUpdated.emit(i, row)
+        self.signals.rowUpdated.emit(i, row, self.rows)
 
     def loadRawData(self, importSettings, rawHeaders, rawRows):
         self.rawHeaders = rawHeaders
@@ -50,12 +50,14 @@ class UnmixModel:
         rows = [row.rawImportedValues + [cell.value for cell in row.calculatedCells] for row in self.rows]
         return headers, rows
 
+    def getNumberOfRejectedRows(self):
+        return len([row for row in self.rows if row.rejected])
 
-def process(signals, rows, importSettings, calculationSettings):
+def process(signals, rows, calculationSettings):
     for i, row in enumerate(rows):
         if signals.halt():
             signals.cancelled()
             return
-        row.process(importSettings, calculationSettings)
+        row.process(calculationSettings)
         signals.progress((i + 1) / len(rows), i, row)
     signals.completed(None)

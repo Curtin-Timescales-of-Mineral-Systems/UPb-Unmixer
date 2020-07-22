@@ -1,3 +1,5 @@
+import math
+
 from scipy.optimize import root_scalar
 
 import utils.errorUtils as errors
@@ -9,8 +11,12 @@ from utils.reconstructedAge import ReconstructedAge
 
 U238_DECAY_CONSTANT = 1.55125 * (10 ** -10)
 U235_DECAY_CONSTANT = 9.8485 * (10 ** -10)
-U238U235_RATIO = 137.818
+TH232_DECAY_CONSTANT = 0.49475 * (10 ** -10)
 
+U238U235_RATIO = 137.818
+AVOGADROS_NUMBER = 6.022E+23
+U_ATOMIC_WEIGHT = 238.029
+TH_ATOMIC_WEIGHT = 232.0381
 
 ################
 ## Geological ##
@@ -109,6 +115,39 @@ def discordant_age(x1, y1, x2, y2, outputSigmas):
     upper_bound = solve_for_t(1)
     return ReconstructedAge(value, lower_bound, upper_bound)
 
+def alphaDamage(u_ppm, th_ppm, age):
+    avogradro_constant = AVOGADROS_NUMBER / (10 ** 18)
+    contrib238 = 8 * (((u_ppm / U_ATOMIC_WEIGHT) * 0.9928) * avogradro_constant) * (errors.exp(age * U238_DECAY_CONSTANT) - 1)
+    contrib235 = 7 * (((u_ppm / U_ATOMIC_WEIGHT) * 0.0072) * avogradro_constant) * (errors.exp(age * U235_DECAY_CONSTANT) - 1)
+    contrib232 = 6 * ((th_ppm / TH_ATOMIC_WEIGHT) * avogradro_constant) * (errors.exp(age * TH232_DECAY_CONSTANT) - 1)
+    alphaDamage = (contrib238 + contrib235 + contrib232)
+    return alphaDamage
+
+def metamictScore(alphaDamage):
+    if alphaDamage < 3:
+        return 1
+    if alphaDamage < 8:
+        return 0.5
+    return 0
+
+def coreToRimScore(rimUPb, rimPbPb, mixedUPb, mixedPbPb, reconstructedUPb, reconstructedPbPb):
+    rimDistance = math.hypot(rimUPb - reconstructedUPb, rimPbPb - reconstructedPbPb)
+    coreDistance = math.hypot(rimUPb - mixedUPb, rimPbPb - mixedPbPb)
+    coreToRimRatio = coreDistance/rimDistance
+
+    if coreToRimRatio >= 0.8:
+        return 1
+    if coreToRimRatio >= 0.05:
+        return 0.5 + 0.5 * (coreToRimRatio - 0.05) / 0.75
+    return 0.5
+
+def rimAgePrecisionScore(rim_age, rim_age_error):
+    precision = rim_age_error/rim_age
+    if precision < 0.05:
+        return 1
+    if precision < 0.2:
+        return 0.5 + 0.5 * (0.2 - precision) / 0.15
+    return 0.5
 
 #############
 ## General ##

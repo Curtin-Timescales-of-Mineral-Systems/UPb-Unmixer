@@ -1,7 +1,7 @@
 import pickle
 from os import path
 
-from utils import stringUtils
+from utils import stringUtils, config
 from model.settings.exports import UnmixExportSettings
 from model.settings.imports import UnmixImportSettings
 from model.settings.calculation import UnmixCalculationSettings
@@ -16,6 +16,14 @@ class Settings:
             UnmixCalculationSettings.KEY: UnmixCalculationSettings(),
             UnmixExportSettings.KEY: UnmixExportSettings()
         }
+        self.version = config.VERSION
+
+    def ensureCompatibility(self):
+        if not hasattr(self, 'version'):
+            self.version = "1.0"
+
+        if self.version == "1.0":
+            self.contents[UnmixImportSettings.KEY].upgradeToVersion1p1()
 
     @classmethod
     def get(cls, settingsType):
@@ -47,7 +55,9 @@ class Settings:
         if path.exists(stringUtils.SAVE_FILE):
             with open(stringUtils.SAVE_FILE, 'rb') as inputFile:
                 try:
-                    return pickle.load(inputFile)
+                    result = pickle.load(inputFile)
+                    result.ensureCompatibility()
+                    return result
                 except Exception as e:
                     print(e)
 

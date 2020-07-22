@@ -1,4 +1,3 @@
-from model.columnSpec import ColumnSpec
 from utils import stringUtils
 from model.settings.type import SettingsType
 
@@ -8,17 +7,21 @@ class UnmixCalculationSettings:
     KEY = SettingsType.CALCULATION
 
     @staticmethod
-    def getCalculatedColumnSpecs():
+    def getCalculatedColumnHeaders():
         return [
-            ColumnSpec("reconstructedAge"),
-            ColumnSpec("reconstructedAgeMin"),
-            ColumnSpec("reconstructedAgeMax"),
-            ColumnSpec("reconstructedUPb"),
-            ColumnSpec("reconstructedUPbMin"),
-            ColumnSpec("reconstructedUPbMax"),
-            ColumnSpec("reconstructedPbPb"),
-            ColumnSpec("reconstructedPbPbMin"),
-            ColumnSpec("reconstructedPbPbMax"),
+            "reconstructedAge",
+            "reconstructedAgeMin",
+            "reconstructedAgeMax",
+            "reconstructedUPb",
+            "reconstructedUPbMin",
+            "reconstructedUPbMax",
+            "reconstructedPbPb",
+            "reconstructedPbPbMin",
+            "reconstructedPbPbMax",
+            "metamictScore",
+            "precisionScore",
+            "rimToCoreScore",
+            "totalScore",
         ]
 
     def __init__(self):
@@ -50,7 +53,11 @@ class UnmixCalculationSettings:
             plusError,
             "Reconstructed " + stringUtils.getPbPbStr(useSuperscripts),
             minusError,
-            plusError
+            plusError,
+            "Metamict score",
+            "Precision score",
+            "Core:rim score",
+            "Total score",
         ]
 
     def getHeaders(self):
