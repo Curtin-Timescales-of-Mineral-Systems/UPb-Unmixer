@@ -45,13 +45,13 @@ jobs:
         include:
           - os: macos-latest
             OS_NAME: macOS
-            PYTHON_VERSION: 3.6.10
+            PYTHON_VERSION: 3.6.11
             EXTENSION:
             RESOURCES: resources:resources
 
           - os: ubuntu-latest
             OS_NAME: ubuntu
-            PYTHON_VERSION: 3.6.10
+            PYTHON_VERSION: 3.6.11
             EXTENSION:
             RESOURCES: resources:resources
 
