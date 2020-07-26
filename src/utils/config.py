@@ -4,7 +4,7 @@
 
 # App titles
 U_PB_UNMIXER_TITLE = "U-Pb Unmixer"
-VERSION = "1.1"
+VERSION = "1.4"
 
 # Size of the confidence interval -- 1 or 2
 SIGMAS_MIXED_POINT_ERROR = 1
