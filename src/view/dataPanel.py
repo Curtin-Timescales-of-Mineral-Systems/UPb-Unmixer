@@ -174,8 +174,8 @@ class UnmixDataPanel(QGroupBox):
 
     def _refreshWarningLabels(self, rows):
         invalidDataRows = len([row for row in rows if not row.validImports])
-        invalidCalculationRows = len([row for row in rows if row.validImports and row.processed and not row.validOutput])
-        rejectedCalculationRows = len([row for row in rows if row.validImports and row.processed and row.rejected])
+        invalidCalculationRows = len([row for row in rows if row.processed and not row.validOutput])
+        rejectedCalculationRows = len([row for row in rows if row.processed and row.validOutput and row.rejected])
         acceptedRows =  len([row for row in rows if row.processed and row.validOutput and not row.rejected])
 
         self.invalidDataWidget.setVisible(invalidDataRows > 0)

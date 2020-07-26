@@ -39,8 +39,8 @@ class UnmixCalculationSettings:
         return (diff / value) * 100.0
 
     @staticmethod
-    def _getHeaders(outputErrorSigmas, outputErrorType, useSuperscripts):
-        error = str(outputErrorSigmas) + " sigmas"
+    def _getHeaders(outputErrorSigmas, outputErrorType, useUnicode):
+        error = stringUtils.get_error_str(outputErrorSigmas, outputErrorType)
         minusError = "-" + error
         plusError = "+" + error
 
@@ -48,10 +48,10 @@ class UnmixCalculationSettings:
             "Reconstructed age (Ma)",
             minusError,
             plusError,
-            "Reconstructed " + stringUtils.getUPbStr(useSuperscripts),
+            "Reconstructed " + stringUtils.getUPbStr(useUnicode),
             minusError,
             plusError,
-            "Reconstructed " + stringUtils.getPbPbStr(useSuperscripts),
+            "Reconstructed " + stringUtils.getPbPbStr(useUnicode),
             minusError,
             plusError,
             "Metamict score",

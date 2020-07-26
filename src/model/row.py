@@ -81,10 +81,9 @@ class Row:
         u, u_min, u_max = self.reconstructedAgeObj.getUPb()
         p, p_min, p_max = self.reconstructedAgeObj.getPbPb()
 
-        alphaDamage = calculations.alphaDamage(self.uConcentration, self.thConcentration, t)
-        metamictScore = calculations.metamictScore(alphaDamage)
-        rimAgePrecisionScore = calculations.rimAgePrecisionScore(t, (t_max + t_min)/2)
-        coreToRimScore = calculations.coreToRimScore(self.rimUPbValue, self.rimPbPbValue, self.mixedUPbValue, self.mixedPbPbValue, u, p)
+        metamictScore = calculations.metamictScore(calculations.alphaDamage(self.uConcentration, self.thConcentration, t)) if t else 0
+        rimAgePrecisionScore = calculations.rimAgePrecisionScore(t, (t_max + t_min)/2) if t and t_min and t_max else 0
+        coreToRimScore = calculations.coreToRimScore(self.rimUPbValue, self.rimPbPbValue, self.mixedUPbValue, self.mixedPbPbValue, u, p) if u and p else 0
         totalScore = metamictScore * rimAgePrecisionScore * coreToRimScore
         self.rejected = totalScore < 0.5
 
