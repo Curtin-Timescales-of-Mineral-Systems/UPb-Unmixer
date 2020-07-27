@@ -39,7 +39,7 @@ class UnmixGraphPanel(QGroupBox):
     def _getCitationText(self):
         return "Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham, " \
                "Matthew L. Daggitt, Julie Hollis, Michael Hartnady, " \
-               "<b>Unmixing U-Pb ages from core–rim mixtures</b>, 2020"
+               "<b>Extracting meaningful U-Pb ages from core–rim mixtures</b>, 2020"
 
     def _setupConcordiaPlot(self, axis):
         axis.set_xlabel("${}^{238}U/{}^{206}Pb$")
