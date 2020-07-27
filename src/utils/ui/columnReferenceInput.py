@@ -25,6 +25,7 @@ class ColumnReferenceInput(QWidget):
         self.lettersWidget = QLineEdit(letterDefault)
         self.lettersWidget.setFixedWidth(self.width)
         self.lettersWidget.setAlignment(Qt.AlignCenter)
+        self.lettersWidget.textChanged.connect(self.convertToUpperCase)
         self.lettersWidget.textChanged.connect(validation)
         self.lettersWidget.setVisible(referenceType is ColumnReferenceType.LETTERS)
         uiUtils.attachValidator(self.lettersWidget, csvUtils.COLUMN_REFERENCE_TYPE_REGEXES[ColumnReferenceType.LETTERS])
@@ -37,6 +38,9 @@ class ColumnReferenceInput(QWidget):
         self.setLayout(layout)
 
         self.currentReferenceType = referenceType
+
+    def convertToUpperCase(self):
+        self.lettersWidget.setText(self.lettersWidget.text().upper())
 
     def changeColumnReferenceType(self, newReferenceType):
         if self.currentReferenceType == newReferenceType:

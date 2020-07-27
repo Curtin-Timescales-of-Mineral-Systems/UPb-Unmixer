@@ -4,7 +4,7 @@
 
 # App titles
 U_PB_UNMIXER_TITLE = "U-Pb Unmixer"
-VERSION = "1.4"
+VERSION = "1.5"
 
 # Size of the confidence interval -- 1 or 2
 SIGMAS_MIXED_POINT_ERROR = 1
@@ -21,7 +21,7 @@ OUTPUT_SIGNIFICANT_FIGURES = 3
 CONSTANT_SIGNIFICANT_FIGURES = 6
 
 ##################
-## CSV settingsDialogs ##
+## CSV settings ##
 ##################
 
 # Delimiter

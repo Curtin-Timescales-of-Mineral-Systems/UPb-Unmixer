@@ -58,19 +58,19 @@ def print_progress_bar(iteration, total, prefix='Progress', suffix='', decimals=
         print()
 
 
-def get_error_sigmas_str(sigmas):
-    return str(sigmas) + "σ"
+def get_error_sigmas_str(sigmas, useUnicode=True):
+    return str(sigmas) + ("σ" if useUnicode else " sigma")
 
 
-def get_error_str(sigmas, error_type):
-    return get_error_sigmas_str(sigmas) + " " + error_symbol(error_type, brackets=True)
+def get_error_str(sigmas, error_type, useUnicode=True):
+    return get_error_sigmas_str(sigmas, useUnicode) + error_symbol(error_type, brackets=True)
 
 
 def error_symbol(error_type, brackets=False):
-    if error_type != "Percentage":
+    if error_type != " Percentage":
         return ""
     if brackets:
-        return "(%)"
+        return " (%)"
     return "%"
 
 

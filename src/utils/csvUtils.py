@@ -19,7 +19,7 @@ class ColumnReferenceType(Enum):
 
 
 COLUMN_REFERENCE_TYPE_REGEXES = {
-    ColumnReferenceType.LETTERS: QRegExp("[A-Z]+"),
+    ColumnReferenceType.LETTERS: QRegExp("[a-zA-Z]+"),
     ColumnReferenceType.NUMBERS: QRegExp("[1-9]([0-9]*)")
 }
 

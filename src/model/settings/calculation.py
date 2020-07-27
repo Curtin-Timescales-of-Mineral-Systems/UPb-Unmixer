@@ -40,7 +40,7 @@ class UnmixCalculationSettings:
 
     @staticmethod
     def _getHeaders(outputErrorSigmas, outputErrorType, useUnicode):
-        error = stringUtils.get_error_str(outputErrorSigmas, outputErrorType)
+        error = stringUtils.get_error_str(outputErrorSigmas, outputErrorType, useUnicode)
         minusError = "-" + error
         plusError = "+" + error
 
