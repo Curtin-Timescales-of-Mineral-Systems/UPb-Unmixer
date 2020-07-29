@@ -33,6 +33,7 @@ class UnmixTabController:
         if not self.inputFile:
             return
 
+        Settings.setCurrentFile(self.inputFile)
         self.view.getSettings(SettingsType.IMPORT, self._importCSVWithSettings)
 
     def _importCSVWithSettings(self, importSettings):

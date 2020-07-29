@@ -3,16 +3,12 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QLineEdit, QStyle, QHBoxLayout, QWidget, QTableWidget, \
     QTableWidgetItem, QLabel
 
+from utils import config
 from utils.stringUtils import pluralise
 from utils.ui import uiUtils
 
 
 class UnmixDataPanel(QGroupBox):
-
-    INVALID_IMPORT_ROW_COLOUR = QColor(255, 0, 0, 27)
-    INVALID_CALCULATION_ROW_COLOUR = QColor(255, 165, 0, 27)
-    REJECTED_CALCULATION_ROW_COLOUR = QColor(255, 255, 0, 27)
-    VALID_ROW_COLOUR = QColor(0, 255, 0, 27)
 
     def __init__(self, controller, *args, **kwargs):
         super().__init__("Data", *args, **kwargs)
@@ -174,7 +170,7 @@ class UnmixDataPanel(QGroupBox):
 
     def _refreshWarningLabels(self, rows):
         invalidDataRows = len([row for row in rows if not row.validImports])
-        invalidCalculationRows = len([row for row in rows if row.processed and not row.validOutput])
+        invalidCalculationRows = len([row for row in rows if row.processed and row.validImports and not row.validOutput])
         rejectedCalculationRows = len([row for row in rows if row.processed and row.validOutput and row.rejected])
         acceptedRows =  len([row for row in rows if row.processed and row.validOutput and not row.rejected])
 
@@ -193,17 +189,17 @@ class UnmixDataPanel(QGroupBox):
         self.dataTable.setVerticalHeaderItem(i, header)
 
         if not row.validImports:
-            header.setBackground(self.INVALID_IMPORT_ROW_COLOUR)
+            header.setBackground(config.Q_INVALID_IMPORT_COLOUR)
             return
         if not row.processed:
             return
         if not row.validOutput:
-            header.setBackground(self.INVALID_CALCULATION_ROW_COLOUR)
+            header.setBackground(config.Q_INVALID_CALCULATION_COLOUR)
             return
         if row.rejected:
-            header.setBackground(self.REJECTED_CALCULATION_ROW_COLOUR)
+            header.setBackground(config.Q_REJECTED_CALCULATION_COLOUR)
             return
-        header.setBackground(self.VALID_ROW_COLOUR)
+        header.setBackground(config.Q_VALID_CALCULATION_COLOUR)
 
     def _refreshRowData(self, i, row):
         print("")
@@ -217,13 +213,13 @@ class UnmixDataPanel(QGroupBox):
     def _setCellColour(self, tableCell, row, dataCell, cellNumber):
         if dataCell.isValid():
             if row.rejected and cellNumber == 20:
-                tableCell.setBackground(self.REJECTED_CALCULATION_ROW_COLOUR)
+                tableCell.setBackground(config.Q_REJECTED_CALCULATION_COLOUR)
             return
 
         if not row.validImports:
-            colour = self.INVALID_IMPORT_ROW_COLOUR
+            colour = config.Q_INVALID_IMPORT_COLOUR
         else:
-            colour = self.INVALID_CALCULATION_ROW_COLOUR
+            colour = config.Q_INVALID_CALCULATION_COLOUR
         tableCell.setBackground(colour)
 
     ###############
