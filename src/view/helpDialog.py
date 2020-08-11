@@ -50,7 +50,9 @@ class UnmixHelpDialog(QDialog):
             "  <li> percentage vs absolute" \
             "  <li> 1σ vs 2σ" \
             "</ul>" \
-            "If a row in the imported data is invalid then it will be highlighted in <font color='red'>RED</font>."
+            "If a row in the imported data is invalid then it will be highlighted in <font color='red'>RED</font>." \
+            "<br>" \
+            "Symbols are not supported in column headings (e.g., ±, σ). Use only English alphabetic characters or numerals."
 
     def _getStandardProcessingHelp(self):
         return \
@@ -75,6 +77,7 @@ class UnmixHelpDialog(QDialog):
             "<li> known age (in Ma) of rim (younger) component in mixture" \
             "<li> measured ²³⁸U/²⁰⁶Pb and ²⁰⁷Pb/²⁰⁶Pb ratios" \
             "<li> uncertainties for all of the above" \
+            "<li> U and Th concentrations (ppm)" \
             "</ul>" + \
             self._getStandardInputHelp()
 
