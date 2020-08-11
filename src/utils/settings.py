@@ -1,7 +1,8 @@
 import pickle
 from os import path
 
-from utils import stringUtils
+from model.settings.type import SettingsType
+from utils import stringUtils, config
 from model.settings.exports import UnmixExportSettings
 from model.settings.imports import UnmixImportSettings
 from model.settings.calculation import UnmixCalculationSettings
@@ -9,24 +10,36 @@ from model.settings.calculation import UnmixCalculationSettings
 
 class Settings:
     __instance = None
+    __currentFile = None
 
     def __init__(self):
-        self.contents = {
-            UnmixImportSettings.KEY: UnmixImportSettings(),
-            UnmixCalculationSettings.KEY: UnmixCalculationSettings(),
-            UnmixExportSettings.KEY: UnmixExportSettings()
-        }
+        self.perFileSettings = {}
+        self.version = config.VERSION
+
+    def __ensureCompatibility(self):
+        pass
+
+    @classmethod
+    def setCurrentFile(cls, file):
+        cls.__currentFile = file
+        cls.__ensureInstance()
+        if file not in cls.__instance.perFileSettings:
+            cls.__instance.perFileSettings[file] = {
+                SettingsType.IMPORT: UnmixImportSettings(),
+                SettingsType.CALCULATION: UnmixCalculationSettings(),
+                SettingsType.EXPORT: UnmixExportSettings()
+            }
 
     @classmethod
     def get(cls, settingsType):
         cls.__ensureInstance()
-        return cls.__instance.contents[settingsType]
-        # raise Exception("Unknown tab and settingsDialogs: " + type(tabType) + " " + type(settingsType))]
+        perFileSettings = cls.__instance.perFileSettings
+        return perFileSettings[cls.__currentFile][settingsType]
 
     @classmethod
     def update(cls, newSettings):
         cls.__ensureInstance()
-        cls.__instance.contents[newSettings.KEY] = newSettings
+        cls.__instance.perFileSettings[cls.__currentFile][newSettings.KEY] = newSettings
         cls.__instance.__save()
 
     @classmethod
@@ -34,8 +47,8 @@ class Settings:
         if cls.__instance is None:
             cls.__instance = Settings()
             loadedInstance = cls.load()
-            for key, value in loadedInstance.contents.items():
-                cls.__instance.contents[key] = value
+            for file, perFileSettings in loadedInstance.perFileSettings.items():
+                cls.__instance.perFileSettings[file] = perFileSettings
         return cls.__instance
 
     def __save(self):
@@ -47,7 +60,9 @@ class Settings:
         if path.exists(stringUtils.SAVE_FILE):
             with open(stringUtils.SAVE_FILE, 'rb') as inputFile:
                 try:
-                    return pickle.load(inputFile)
+                    result = pickle.load(inputFile)
+                    result.__ensureCompatibility()
+                    return result
                 except Exception as e:
                     print(e)
 

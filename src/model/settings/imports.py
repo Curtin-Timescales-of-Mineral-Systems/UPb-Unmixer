@@ -1,5 +1,4 @@
 from model.column import Column
-from model.columnSpec import ColumnSpec
 from utils import stringUtils, csvUtils
 
 from model.settings.type import SettingsType
@@ -11,21 +10,23 @@ class UnmixImportSettings:
     KEY = SettingsType.IMPORT
 
     @staticmethod
-    def getImportedColumnSpecs():
+    def getImportedColumnHeaders():
         return [
-            ColumnSpec(Column.RIM_AGE_VALUE),
-            ColumnSpec(Column.RIM_AGE_ERROR),
-            ColumnSpec(Column.MIXED_U_PB_VALUE),
-            ColumnSpec(Column.MIXED_U_PB_ERROR),
-            ColumnSpec(Column.MIXED_PB_PB_VALUE),
-            ColumnSpec(Column.MIXED_PB_PB_ERROR)
+            Column.RIM_AGE_VALUE,
+            Column.RIM_AGE_ERROR,
+            Column.MIXED_U_PB_VALUE,
+            Column.MIXED_U_PB_ERROR,
+            Column.MIXED_PB_PB_VALUE,
+            Column.MIXED_PB_PB_ERROR,
+            Column.U_CONCENTRATION,
+            Column.TH_CONCENTRATION
         ]
 
     def __init__(self):
         self.delimiter = ","
         self.hasHeaders = True
         self.columnReferenceType = ColumnReferenceType.LETTERS
-        self._columnRefs = {spec.name: i for i, spec in enumerate(self.getImportedColumnSpecs())}
+        self._columnRefs = {name: i for i, name in enumerate(self.getImportedColumnHeaders())}
 
         self.rimAgeErrorType = "Absolute"
         self.rimAgeErrorSigmas = 2
@@ -71,7 +72,9 @@ class UnmixImportSettings:
             "Mixed " + stringUtils.U_PB_STR,
             "±" + self.getMixedUPbErrorStr(),
             "Mixed " + stringUtils.PB_PB_STR,
-            "±" + self.getMixedPbPbErrorStr()
+            "±" + self.getMixedPbPbErrorStr(),
+            "U ppm",
+            "Th ppm"
         ]
 
     ## Validation ##
@@ -86,3 +89,8 @@ class UnmixImportSettings:
             return "Columns should not contain duplicates"
 
         return None
+
+
+    def upgradeToVersion1p1(self):
+        self._columnRefs[Column.U_CONCENTRATION] = 6
+        self._columnRefs[Column.TH_CONCENTRATION] = 7

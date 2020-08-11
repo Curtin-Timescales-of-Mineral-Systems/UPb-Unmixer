@@ -33,6 +33,7 @@ class UnmixTabController:
         if not self.inputFile:
             return
 
+        Settings.setCurrentFile(self.inputFile)
         self.view.getSettings(SettingsType.IMPORT, self._importCSVWithSettings)
 
     def _importCSVWithSettings(self, importSettings):
@@ -64,9 +65,7 @@ class UnmixTabController:
         self._process(processingSettings)
 
     def _process(self, calculationSettings):
-        importSettings = Settings.get(SettingsType.IMPORT)
-        self.worker = AsyncTask(self.signals, self.model.getProcessingFunction(), self.model.getProcessingData(),
-                                importSettings, calculationSettings)
+        self.worker = AsyncTask(self.signals, self.model.getProcessingFunction(), self.model.getProcessingData(), calculationSettings)
         self.worker.start()
 
     def cancelProcessing(self):
@@ -74,7 +73,8 @@ class UnmixTabController:
             self.worker.halt()
 
     def exportCSV(self):
-        outputFile = self.view.getOutputFile()
+        numberOfRejectedRows = self.model.getNumberOfRejectedRows()
+        outputFile = self.view.getOutputFile(numberOfRejectedRows)
         if not outputFile:
             return
 
@@ -89,6 +89,10 @@ class UnmixTabController:
         except Exception as e:
             self.signals.taskComplete.emit(False, "Failed to export CSV file")
             raise e
+
+    def showHelp(self):
+        dialog = UnmixHelpDialog()
+        dialog.exec_()
 
     ##########
     # Events #
@@ -108,6 +112,7 @@ class UnmixTabController:
 
     def onProcessingErrored(self, exception):
         self.signals.taskComplete.emit(False, "Error whilst processing data")
+        raise Exception(exception)
 
     #################
     # Row selection #
@@ -118,9 +123,6 @@ class UnmixTabController:
         calculationSettings = Settings.get(SettingsType.CALCULATION)
         self.view.graphPanel.displayRows(rows, calculationSettings)
 
-    def showHelp(self):
-        dialog = UnmixHelpDialog()
-        dialog.exec_()
 
     #########
     # Utils #

@@ -20,29 +20,19 @@ class UnmixGraphPanel(QGroupBox):
     def __init__(self, signals):
         super().__init__("TW concordia plot")
 
+        graphWidget = self.createGraph()
+        graphWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         layout = QVBoxLayout()
-        layout.addWidget(self.createGraph())
-        layout.addWidget(self._createCitation())
+        layout.addWidget(graphWidget)
         self.setLayout(layout)
-
-    def _createCitation(self):
-        label = QLabel(self._getCitationText())
-        label.setWordWrap(True)
-        label.setTextFormat(Qt.RichText)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        return label
-
-    def _getCitationText(self):
-        return "Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham, " \
-               "Matthew L. Daggitt, Julie Hollis, Michael Hartnady, " \
-               "<b>Unmixing U-Pb ages from core–rim mixtures</b>, 2020"
 
     def _setupConcordiaPlot(self, axis):
         axis.set_xlabel("${}^{238}U/{}^{206}Pb$")
         axis.set_ylabel("${}^{207}Pb/{}^{206}Pb$")
 
-        maxAge = 4500
-        minAge = 200
+        maxAge = 6000
+        minAge = 1
         xMin = calculations.u238pb206_from_age(maxAge * (10 ** 6))
         xMax = calculations.u238pb206_from_age(minAge * (10 ** 6))
 
@@ -52,7 +42,7 @@ class UnmixGraphPanel(QGroupBox):
         axis.plot(xs, ys)
 
         # Plot concordia times
-        ts2 = list(range(100, minAge, 100)) + list(range(500, maxAge + 1, 500))
+        ts2 = list(range(100, 500, 100)) + list(range(500, maxAge + 1, 500))
         xs2 = [calculations.u238pb206_from_age(t * (10 ** 6)) for t in ts2]
         ys2 = [calculations.pb207pb206_from_age(t * (10 ** 6)) for t in ts2]
         axis.scatter(xs2, ys2)
@@ -140,8 +130,11 @@ class UnmixGraphPanel(QGroupBox):
             y3_errors = []
             t3_fmt = 'none'
             xlim = self._default_xlim
-            ylim = self._default_ylim
+            yStart = min(y1 - y1_error, y2 - y2_error)
+            yEnd = max(y1 + y1_error, y2 + y2_error)
+            _, ylim = self._calculateMargin(x2 - x2_error, x1 + x1_error, yStart, yEnd)
             label_text = "(no intercept with concordia curve found)"
+            colour = config.INVALID_CALCULATION_COLOUR
         else:
             t, x3, y3 = reconstructedAge.values
             t_min, x3_min, y3_min = reconstructedAge.minValues
@@ -179,38 +172,51 @@ class UnmixGraphPanel(QGroupBox):
 
             xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
 
+            if not reconstructedAge.fullyValid:
+                colour = config.INVALID_CALCULATION_COLOUR
+            elif row.rejected:
+                colour = config.REJECTED_CALCULATION_COLOUR
+            else:
+                colour = config.VALID_CALCULATION_COLOUR
+
         self.axis.set_xlim(*xlim)
         self.axis.set_ylim(*ylim)
 
         # Best fit line
-        self.axis.plot(best_fit_line_xs, best_fit_line_ys, linestyle='--')
+        self.axis.plot(best_fit_line_xs, best_fit_line_ys, linestyle='--', color=colour)
         # Rim points
-        self.axis.errorbar([x1], [y1], xerr=[x1_error], yerr=[y1_error], fmt='none', color=config.COLOUR_RIM_AGE)
+        self.axis.errorbar([x1], [y1], xerr=[x1_error], yerr=[y1_error], fmt='none', color=colour)
         # Discordant points
-        self.axis.errorbar([x2], [y2], xerr=[x2_error], yerr=[y2_error], fmt='none', color=config.COLOUR_MIXED_POINT)
+        self.axis.errorbar([x2], [y2], xerr=[x2_error], yerr=[y2_error], fmt='none', color=colour)
         # Reconstructed age error line
-        self.axis.plot(t_error_xs, t_error_ys, color=config.COLOUR_RECONSTRUCTED_AGE, linewidth=2)
+        self.axis.plot(t_error_xs, t_error_ys, color=colour, linewidth=2)
         # Reconstructed age xy points
-        self.axis.errorbar(x3s, y3s, xerr=x3_errors, yerr=y3_errors, fmt=t3_fmt, color=config.COLOUR_RECONSTRUCTED_AGE)
+        self.axis.errorbar(x3s, y3s, xerr=x3_errors, yerr=y3_errors, fmt=t3_fmt, color=colour)
         # Text
         self.axis.text(0.95, 0.95, label_text, horizontalalignment='right', verticalalignment='top',
                        transform=self.axis.transAxes)
-        # plt.text(12, 0.4, t_label_text)
 
     def _displayRows(self, rows, calculationSettings):
-        good_xs = []
-        good_ys = []
-        good_xs_error_min = []
-        good_xs_error_max = []
-        good_ys_error_min = []
-        good_ys_error_max = []
+        valid_xs = []
+        valid_ys = []
+        valid_xs_error_min = []
+        valid_xs_error_max = []
+        valid_ys_error_min = []
+        valid_ys_error_max = []
 
-        bad_xs = []
-        bad_ys = []
-        bad_xs_error_min = []
-        bad_xs_error_max = []
-        bad_ys_error_min = []
-        bad_ys_error_max = []
+        invalid_xs = []
+        invalid_ys = []
+        invalid_xs_error_min = []
+        invalid_xs_error_max = []
+        invalid_ys_error_min = []
+        invalid_ys_error_max = []
+
+        rejected_xs = []
+        rejected_ys = []
+        rejected_xs_error_min = []
+        rejected_xs_error_max = []
+        rejected_ys_error_min = []
+        rejected_ys_error_max = []
 
         xmax, xmin = self._default_xlim
         ymax, ymin = self._default_ylim
@@ -236,21 +242,29 @@ class UnmixGraphPanel(QGroupBox):
             if not y3_max:
                 y3_max = y3
 
-            if reconstructedAge.fullyValid:
-                xs = good_xs
-                ys = good_ys
-                xs_error_min = good_xs_error_min
-                xs_error_max = good_xs_error_max
-                ys_error_min = good_ys_error_min
-                ys_error_max = good_ys_error_max
-            else:
+            if not reconstructedAge.fullyValid:
                 anyInvalidRows = True
-                xs = bad_xs
-                ys = bad_ys
-                xs_error_min = bad_xs_error_min
-                xs_error_max = bad_xs_error_max
-                ys_error_min = bad_ys_error_min
-                ys_error_max = bad_ys_error_max
+                xs = invalid_xs
+                ys = invalid_ys
+                xs_error_min = invalid_xs_error_min
+                xs_error_max = invalid_xs_error_max
+                ys_error_min = invalid_ys_error_min
+                ys_error_max = invalid_ys_error_max
+            elif row.rejected:
+                xs = rejected_xs
+                ys = rejected_ys
+                xs_error_min = rejected_xs_error_min
+                xs_error_max = rejected_xs_error_max
+                ys_error_min = rejected_ys_error_min
+                ys_error_max = rejected_ys_error_max
+            else:
+                xs = valid_xs
+                ys = valid_ys
+                xs_error_min = valid_xs_error_min
+                xs_error_max = valid_xs_error_max
+                ys_error_min = valid_ys_error_min
+                ys_error_max = valid_ys_error_max
+
 
             xs += [x3]
             ys += [y3]
@@ -265,10 +279,12 @@ class UnmixGraphPanel(QGroupBox):
             ys_error_min += [y3 - y3_min]
             ys_error_max += [y3_max - y3]
 
-        good_xs_error = good_xs_error_min, good_xs_error_max
-        good_ys_error = good_ys_error_min, good_ys_error_max
-        bad_xs_error = bad_xs_error_min, bad_xs_error_max
-        bad_ys_error = bad_ys_error_min, bad_ys_error_max
+        valid_xs_error = valid_xs_error_min, valid_xs_error_max
+        valid_ys_error = valid_ys_error_min, valid_ys_error_max
+        invalid_xs_error = invalid_xs_error_min, invalid_xs_error_max
+        invalid_ys_error = invalid_ys_error_min, invalid_ys_error_max
+        rejected_xs_error = rejected_xs_error_min, rejected_xs_error_max
+        rejected_ys_error = rejected_ys_error_min, rejected_ys_error_max
 
         if anyRows:
             xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
@@ -284,16 +300,22 @@ class UnmixGraphPanel(QGroupBox):
             label_text += "\n (some error bars unavailable)"
 
         self.axis.errorbar(
-            good_xs, good_ys,
-            xerr=good_xs_error, yerr=good_ys_error,
+            valid_xs, valid_ys,
+            xerr=valid_xs_error, yerr=valid_ys_error,
             fmt='none',
-            color=config.COLOUR_RECONSTRUCTED_AGE
+            color=config.VALID_CALCULATION_COLOUR
         )
         self.axis.errorbar(
-            bad_xs, bad_ys,
-            xerr=bad_xs_error, yerr=bad_ys_error,
+            invalid_xs, invalid_ys,
+            xerr=invalid_xs_error, yerr=invalid_ys_error,
             fmt='^',
-            color=config.COLOUR_RECONSTRUCTED_AGE
+            color=config.INVALID_CALCULATION_COLOUR
+        )
+        self.axis.errorbar(
+            rejected_xs, rejected_ys,
+            xerr=rejected_xs_error, yerr=rejected_ys_error,
+            fmt='^',
+            color=config.REJECTED_CALCULATION_COLOUR
         )
 
         self.axis.set_xlim(*xlim)

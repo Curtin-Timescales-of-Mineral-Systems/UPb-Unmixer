@@ -3,8 +3,10 @@
 ######################
 
 # App titles
+from PyQt5.QtGui import QColor
+
 U_PB_UNMIXER_TITLE = "U-Pb Unmixer"
-LEAD_LOSS_TITLE = "Lead loss"
+VERSION = "1.6"
 
 # Size of the confidence interval -- 1 or 2
 SIGMAS_MIXED_POINT_ERROR = 1
@@ -21,7 +23,7 @@ OUTPUT_SIGNIFICANT_FIGURES = 3
 CONSTANT_SIGNIFICANT_FIGURES = 6
 
 ##################
-## CSV settingsDialogs ##
+## CSV settings ##
 ##################
 
 # Delimiter
@@ -54,7 +56,13 @@ LABEL_RECONSTRUCTED_AGE = "Reconstructed age"
 LABEL_RECONSTRUCTED_AGE_ERROR = "Reconstructed age error"
 
 # Graph colors
+Q_INVALID_IMPORT_COLOUR = QColor(255, 0, 0, 27)
+Q_INVALID_CALCULATION_COLOUR = QColor(255, 165, 0, 27)
+Q_REJECTED_CALCULATION_COLOUR = QColor(230, 230, 0, 27)
+Q_VALID_CALCULATION_COLOUR = QColor(0, 255, 0, 27)
+
 COLOUR_CONCORDIA_CURVE = 'b'
-COLOUR_RIM_AGE = 'y'
-COLOUR_MIXED_POINT = 'g'
-COLOUR_RECONSTRUCTED_AGE = 'r'
+INVALID_IMPORT_COLOUR = '#FF0000'
+INVALID_CALCULATION_COLOUR = '#FFA500'
+REJECTED_CALCULATION_COLOUR = '#E6E600'
+VALID_CALCULATION_COLOUR = '#00FF00'

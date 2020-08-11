@@ -10,13 +10,16 @@ from utils.config import *
 ## Column references ##
 #######################
 
+from utils.exception import ExpectedException
+
+
 class ColumnReferenceType(Enum):
     LETTERS = "Letters"
     NUMBERS = "Numbers"
 
 
 COLUMN_REFERENCE_TYPE_REGEXES = {
-    ColumnReferenceType.LETTERS: QRegExp("[A-Z]+"),
+    ColumnReferenceType.LETTERS: QRegExp("[a-zA-Z]+"),
     ColumnReferenceType.NUMBERS: QRegExp("[1-9]([0-9]*)")
 }
 
@@ -77,7 +80,11 @@ def _numberToLetter(number):
 def read_input(input_file, settings):
     with open(input_file, newline='', encoding="utf-8") as csv_file:
         reader = csv.reader(csv_file, delimiter=settings.delimiter, quotechar='|')
-        lines = [line for line in reader]
+        try:
+            lines = [line for line in reader]
+        except UnicodeDecodeError as e:
+            raise ExpectedException("The input file appears to have unicode characters in that cannot be decoded. "
+                                    "Please remove these characters and try again.")
 
         if settings.hasHeaders:
             rows = lines[1:]
@@ -93,10 +100,9 @@ def read_input(input_file, settings):
             largestColumnRefAvailable = convertColumnRef(len(line), settings.columnReferenceType, False)
             largestColumnRefAskedFor = convertColumnRef(largestColumnNumberAskedFor + 1, settings.columnReferenceType,
                                                         False)
-            raise Exception(
-                "Invalid column reference. Asked for column " + str(largestColumnRefAskedFor) + " but the CSV file only"
-                                                                                                " goes up to column " + str(
-                    largestColumnRefAvailable) + "."
+            raise ExpectedException(
+                "Invalid column reference. Asked for column " + str(largestColumnRefAskedFor) +
+                " but the CSV file only goes up to column " + str(largestColumnRefAvailable) + "."
             )
 
     return headers, rows
@@ -108,35 +114,3 @@ def write_output(headers, rows, output_file):
         writer.writerow(headers)
         for row in rows:
             writer.writerow(row)
-
-
-###########
-## Other ##
-###########
-
-"""
-def perform_all_calculations(headers, rows, figure_dir, progress_callback):
-    error_strings = ["-" + stringUtils.ERROR_STR_OUTPUT, "+" + stringUtils.ERROR_STR_OUTPUT]
-    headers.extend(
-        ["Recon. age"] + error_strings + ["Recon. U238/Pb206"] + error_strings + ["Recon. Pb207/Pb206"] + error_strings)
-
-    progress_callback(0)
-    for i, row in enumerate(rows[1:]):
-        progress_callback(i + 1)
-        try:
-            _perform_calculations(i + 1, row, figure_dir)
-        except ValueError as e:
-            stringUtils.print_warning("\rIgnoring row " + str(i) + ": " + str(e))
-    progress_callback(len(rows))
-
-def _parse(column_ref, row, row_number, column_name=None):
-    column_number = stringUtils.get_column_number(column_ref)
-    string = row[column_number]
-    try:
-        return float(string)
-    except:
-        column_text = column_name if column_name else ("column " + column_number)
-        raise ValueError(
-            "Invalid value '" + string + "' for '" + column_text + "' in row " + str(row_number) + " column " + str(
-                column_number))
-"""

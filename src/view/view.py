@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QSplitter, QVBoxLayout, QDialog, QMessa
 
 from utils.settings import Settings
 from model.settings.type import SettingsType
+from utils.stringUtils import pluralise
 from view.graphPanel import UnmixGraphPanel
 from view.dataPanel import UnmixDataPanel
 from view.settingsDialogs.calculation import UnmixCalculationSettingsDialog
@@ -59,12 +60,27 @@ class UnmixView(QWidget):
             caption='Open CSV file',
             directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests'
         )[0]
-        # return '/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/data/unmixTest.csv'
 
-    def getOutputFile(self):
+    def getOutputFile(self, numberOfRejectedRows):
+        message = "Is this a simple binary core-rim mixture and do your analyses cross only two age domains?"
+        if numberOfRejectedRows != 0:
+            message +=  "\n\nNote: the output contains " + pluralise("spot", numberOfRejectedRows) + " for which the " \
+                        "calculated reconstructed core age has a total score of < 0.5 and therefore are deemed " \
+                        "unreliable. We recommend that these ages are not used in further analysis."
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("Confirmation of assumptions")
+        msg.setText(message)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        retval = msg.exec_()
+
+        if retval == QMessageBox.No:
+            return
+
         return QFileDialog.getSaveFileName(
             caption='Save CSV file',
-            directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests'
+            directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests',
+            filter="Comma Separated Values Spreadsheet (*.csv);;"
         )[0]
 
     def getSettings(self, settingsType, callback):

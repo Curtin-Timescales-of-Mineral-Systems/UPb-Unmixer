@@ -8,3 +8,5 @@ class Column(Enum):
     MIXED_U_PB_ERROR = 3
     MIXED_PB_PB_VALUE = 4
     MIXED_PB_PB_ERROR = 5
+    U_CONCENTRATION = 6
+    TH_CONCENTRATION = 7

@@ -1,5 +1,6 @@
 import multiprocessing
 import sys
+import traceback
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -7,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QTabWidget, QVBoxLayout, QMessageBox, QAppl
 
 from controller.controller import UnmixTabController
 from utils import config
+from utils.exception import ExpectedException
 
 
 class UPbUnmixerApplication:
@@ -16,9 +18,21 @@ class UPbUnmixerApplication:
         # (see https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing)
         multiprocessing.freeze_support()
 
-    def exceptionHook(self, exctype, value, traceback):
-        sys.__excepthook__(exctype, value, traceback)
-        QMessageBox.critical(None, "Error", str(value))
+    def exceptionHook(self, exctype, value, tb):
+        if isinstance(value, ExpectedException):
+            QMessageBox.critical(None, "Error", str(value))
+            return
+
+        sys.__excepthook__(exctype, value, tb)
+        error = str(value) + "\n" + "".join(traceback.format_tb(tb))
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("An error occured. Please file a bug report with the details below at 'https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/issues'")
+        msg.setWindowTitle("Error")
+        msg.setDetailedText(error)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
     def createGUI(self):
         # Reroute exceptions to display a message box to the user
@@ -40,7 +54,7 @@ class UPbUnmixerApplication:
 
     @staticmethod
     def getVersion():
-        return "1.0"
+        return config.VERSION
 
     @staticmethod
     def getIcon():

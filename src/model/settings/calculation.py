@@ -1,4 +1,3 @@
-from model.columnSpec import ColumnSpec
 from utils import stringUtils
 from model.settings.type import SettingsType
 
@@ -8,17 +7,21 @@ class UnmixCalculationSettings:
     KEY = SettingsType.CALCULATION
 
     @staticmethod
-    def getCalculatedColumnSpecs():
+    def getCalculatedColumnHeaders():
         return [
-            ColumnSpec("reconstructedAge"),
-            ColumnSpec("reconstructedAgeMin"),
-            ColumnSpec("reconstructedAgeMax"),
-            ColumnSpec("reconstructedUPb"),
-            ColumnSpec("reconstructedUPbMin"),
-            ColumnSpec("reconstructedUPbMax"),
-            ColumnSpec("reconstructedPbPb"),
-            ColumnSpec("reconstructedPbPbMin"),
-            ColumnSpec("reconstructedPbPbMax"),
+            "reconstructedAge",
+            "reconstructedAgeMin",
+            "reconstructedAgeMax",
+            "reconstructedUPb",
+            "reconstructedUPbMin",
+            "reconstructedUPbMax",
+            "reconstructedPbPb",
+            "reconstructedPbPbMin",
+            "reconstructedPbPbMax",
+            "metamictScore",
+            "precisionScore",
+            "rimToCoreScore",
+            "totalScore",
         ]
 
     def __init__(self):
@@ -36,8 +39,8 @@ class UnmixCalculationSettings:
         return (diff / value) * 100.0
 
     @staticmethod
-    def _getHeaders(outputErrorSigmas, outputErrorType, useSuperscripts):
-        error = str(outputErrorSigmas) + " sigmas"
+    def _getHeaders(outputErrorSigmas, outputErrorType, useUnicode):
+        error = stringUtils.get_error_str(outputErrorSigmas, outputErrorType, useUnicode)
         minusError = "-" + error
         plusError = "+" + error
 
@@ -45,12 +48,16 @@ class UnmixCalculationSettings:
             "Reconstructed age (Ma)",
             minusError,
             plusError,
-            "Reconstructed " + stringUtils.getUPbStr(useSuperscripts),
+            "Reconstructed " + stringUtils.getUPbStr(useUnicode),
             minusError,
             plusError,
-            "Reconstructed " + stringUtils.getPbPbStr(useSuperscripts),
+            "Reconstructed " + stringUtils.getPbPbStr(useUnicode),
             minusError,
-            plusError
+            plusError,
+            "Metamict score",
+            "Precision score",
+            "Core:rim score",
+            "Total score",
         ]
 
     def getHeaders(self):

@@ -61,6 +61,13 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
             defaults.mixedPbPbErrorSigmas
         )
 
+        self._uThConcentrationWidget = UThConcentrationWidget(
+            self._validate,
+            defaults.columnReferenceType,
+            columnRefs[Column.U_CONCENTRATION],
+            columnRefs[Column.TH_CONCENTRATION]
+        )
+
         self._updateColumnRefs(defaults.columnReferenceType)
 
         layout = QGridLayout()
@@ -70,6 +77,7 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
         layout.addWidget(self._rimAgeWidget, 0, 1)
         layout.addWidget(self._mixedUPbWidget, 1, 0)
         layout.addWidget(self._mixedPbPbWidget, 1, 1)
+        layout.addWidget(self._uThConcentrationWidget, 2, 0)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -101,7 +109,9 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
             Column.MIXED_U_PB_VALUE: self._mixedUPbWidget.getValueColumn(),
             Column.MIXED_U_PB_ERROR: self._mixedUPbWidget.getErrorColumn(),
             Column.MIXED_PB_PB_VALUE: self._mixedPbPbWidget.getValueColumn(),
-            Column.MIXED_PB_PB_ERROR: self._mixedPbPbWidget.getErrorColumn()
+            Column.MIXED_PB_PB_ERROR: self._mixedPbPbWidget.getErrorColumn(),
+            Column.U_CONCENTRATION: self._uThConcentrationWidget.getUColumn(),
+            Column.TH_CONCENTRATION: self._uThConcentrationWidget.getThColumn(),
         }
 
         settings.rimAgeErrorType = self._rimAgeWidget.getErrorType()
@@ -183,3 +193,27 @@ class ImportedValueErrorWidget(QGroupBox):
     def changeColumnReferenceType(self, newReferenceType):
         self._valueColumn.changeColumnReferenceType(newReferenceType)
         self._errorColumn.changeColumnReferenceType(newReferenceType)
+
+class UThConcentrationWidget(QGroupBox):
+
+    def __init__(self, validation, defaultColumnReferenceType, uConcentrationDefaultValue, thConcentrationDefaultValue):
+        super().__init__("U and Th concentrations")
+
+        self._uColumn = ColumnReferenceInput(validation, defaultColumnReferenceType, uConcentrationDefaultValue)
+        self._thColumn = ColumnReferenceInput(validation, defaultColumnReferenceType, thConcentrationDefaultValue)
+
+        layout = QFormLayout()
+        layout.setHorizontalSpacing(uiUtils.FORM_HORIZONTAL_SPACING)
+        layout.addRow("U concentration (ppm) column", self._uColumn)
+        layout.addRow("Th concentration (ppm) column", self._thColumn)
+        self.setLayout(layout)
+
+    def getUColumn(self):
+        return self._uColumn.text()
+
+    def getThColumn(self):
+        return self._thColumn.text()
+
+    def changeColumnReferenceType(self, newReferenceType):
+        self._uColumn.changeColumnReferenceType(newReferenceType)
+        self._thColumn.changeColumnReferenceType(newReferenceType)
