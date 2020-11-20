@@ -45,7 +45,6 @@ class Application:
         self.model: Model = Model(self)
         self.view: View = View(self)
 
-        self.cheat_load()
         sys.exit(app.exec_())
 
     #############
