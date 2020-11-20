@@ -1,118 +1,117 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog, QSplitter, QVBoxLayout, QDialog, QMessageBox, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QDialog, QMessageBox, QFileDialog, QSplitter
 
-from utils.settings import Settings
+from model.model import Model
 from model.settings.type import SettingsType
-from utils.stringUtils import pluralise
-from view.graphPanel import UnmixGraphPanel
-from view.dataPanel import UnmixDataPanel
-from view.settingsDialogs.calculation import UnmixCalculationSettingsDialog
-
-from view.settingsDialogs.imports import UnmixImportSettingsDialog
+from utils import config
+from utils.settings import Settings
+from utils.string import pluralise
 from utils.ui.statusBar import StatusBarWidget
+from view.dataPanel import DataPanel
+from view.graphPanel import GraphPanel
+from view.settingsDialogs.calculation import CalculationSettingsDialog
+from view.settingsDialogs.imports import ImportSettingsDialog
 
 
-class UnmixView(QWidget):
-    def __init__(self, controller, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.controller = controller
-        self.initUI()
+class View(QDialog):
+    """
+    A view for the application, implemented using the PyQT framework
+    """
 
-        self.controller.signals.csvImported.connect(self.onCSVImportFinished)
+    def __init__(self, application):
+        super().__init__()
 
-    def initUI(self):
-        self.graphPanel = self.createGraphWidget()
-        self.dataPanel = self.createDataWidget()
-        self.statusBar = StatusBarWidget(self.controller.signals)
+        self.setWindowTitle(config.TITLE + " (v" + config.VERSION + ")")
+        self.setGeometry(10, 10, 1220, 500)
+        self.setWindowFlags(self.windowFlags() & Qt.WindowMaximizeButtonHint)
+
+
+        self.data_panel = DataPanel(application)
+        self.graph_panel = GraphPanel()
+        self.status_bar = StatusBarWidget(application.signals)
 
         splitter = QSplitter(Qt.Horizontal)
-        splitter.addWidget(self.dataPanel)
-        splitter.addWidget(self.graphPanel)
+        splitter.addWidget(self.data_panel)
+        splitter.addWidget(self.graph_panel)
         splitter.setSizes([10000, 10000])
         splitter.setContentsMargins(1, 1, 1, 1)
 
         layout = QVBoxLayout()
         layout.addWidget(splitter, 1)
-        layout.addWidget(self.statusBar, 0)
+        layout.addWidget(self.status_bar, 0)
         self.setLayout(layout)
 
-    ########
-    ## IO ##
-    ########
+        application.signals.csv_imported.connect(self.on_csv_imported)
+        self.showMaximized()
 
-    def createDataWidget(self):
-        return UnmixDataPanel(self.controller)
+    ######
+    # IO #
+    ######
 
-    def createGraphWidget(self):
-        return UnmixGraphPanel(self.controller)
+    def get_settings(self, settingsType, callback):
+        settings_popup = self.get_settings_dialog(settingsType)
 
-    def getSettingsDialog(self, settingsType):
-        defaultSettings = Settings.get(settingsType)
+        def outer_callback(result):
+            if result == QDialog.Rejected:
+                return None
+            callback(settings_popup.settings)
+
+        settings_popup.finished.connect(outer_callback)
+        settings_popup.show()
+
+    def get_settings_dialog(self, settingsType):
+        default_settings = Settings.get(settingsType)
         if settingsType == SettingsType.IMPORT:
-            return UnmixImportSettingsDialog(defaultSettings)
+            return ImportSettingsDialog(default_settings)
         if settingsType == SettingsType.CALCULATION:
-            return UnmixCalculationSettingsDialog(defaultSettings)
+            return CalculationSettingsDialog(default_settings)
 
         raise Exception("Unknown settingsDialogs " + str(type(settingsType)))
 
-    def getInputFile(self):
+    def get_input_file(self):
         return QFileDialog.getOpenFileName(
             caption='Open CSV file',
-            directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests'
+            directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests',
+            options=QFileDialog.DontUseNativeDialog
         )[0]
 
-    def getOutputFile(self, numberOfRejectedRows):
+    def get_output_file(self, number_of_rejected_rows):
         message = "Is this a simple binary core-rim mixture and do your analyses cross only two age domains?"
-        if numberOfRejectedRows != 0:
-            message +=  "\n\nNote: the output contains " + pluralise("spot", numberOfRejectedRows) + " for which the " \
-                        "calculated reconstructed core age has a total score of < 0.5 and therefore are deemed " \
-                        "unreliable. We recommend that these ages are not used in further analysis."
+        if number_of_rejected_rows != 0:
+            message += "\n\nNote: the output contains " + pluralise("spot", number_of_rejected_rows) + " for which the " \
+                       "calculated reconstructed core age has a total score of < 0.5 and therefore are deemed " \
+                       "unreliable. We recommend that these ages are not used in further analysis."
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("Confirmation of assumptions")
         msg.setText(message)
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        retval = msg.exec_()
+        return_value = msg.exec_()
 
-        if retval == QMessageBox.No:
+        if return_value == QMessageBox.No:
             return
 
         return QFileDialog.getSaveFileName(
             caption='Save CSV file',
             directory='/home/matthew/Dropbox/Academia/Code/Python/UnmixConcordia/tests',
-            filter="Comma Separated Values Spreadsheet (*.csv);;"
+            filter="Comma Separated Values Spreadsheet (*.csv);;",
+            options=QFileDialog.DontUseNativeDialog
         )[0]
 
-    def getSettings(self, settingsType, callback):
-        settingsPopup = self.getSettingsDialog(settingsType)
+    ##########
+    # Events #
+    ##########
 
-        def outerCallback(result):
-            if result == QDialog.Rejected:
-                return None
-            callback(settingsPopup.settings)
-
-        settingsPopup.finished.connect(outerCallback)
-        settingsPopup.show()
-
-    ############
-    ## Events ##
-    ############
-
-    def onCSVImportFinished(self, result, inputFile):
+    def on_csv_imported(self, result: bool, input_file: str):
         if not result:
             self.endTask(False, "Failed to import CSV file")
             return
 
-        self.dataPanel.afterSuccessfulCSVImport(inputFile)
-
-    def onProcessingProgress(self, progress, *args):
+    def onProcessingProgress(self, progress):
         self.updateTask(progress)
 
     def onProcessingCompleted(self):
         self.endTask(True, "Successfully processed data")
-
-    def onProcessingCancelled(self):
-        pass
 
     def onProcessingErrored(self, exception):
         self.endTask(False, "Error during processing of data")
@@ -124,5 +123,15 @@ class UnmixView(QWidget):
     ## Clean-up ##
     ##############
 
-    def closeEvent(self, event):
-        self.haltEvent.set()
+    def show_expected_error(self, error_message):
+        QMessageBox.critical(None, "Error", error_message)
+
+    def show_unexpected_error(self, error_message):
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Critical)
+        popup.setText("An error occurred. Please file a bug report with the details below at "
+                      "'https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/issues'")
+        popup.setWindowTitle("Error")
+        popup.setDetailedText(error_message)
+        popup.setStandardButtons(QMessageBox.Ok)
+        popup.exec_()

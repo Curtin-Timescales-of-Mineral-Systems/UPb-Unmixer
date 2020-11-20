@@ -8,13 +8,13 @@ from utils.ui import uiUtils
 
 class StatusBarWidget(QWidget):
 
-    def __init__(self, signals, *args, **kwargs):
-        super(StatusBarWidget, self).__init__(*args, **kwargs)
+    def __init__(self, signals):
+        super().__init__()
         self.initUI()
 
-        signals.taskStarted.connect(self.onTaskStarted)
-        signals.taskProgress.connect(self.onTaskProgress)
-        signals.taskComplete.connect(self.onTaskComplete)
+        signals.task_started.connect(self.onTaskStarted)
+        signals.task_progress.connect(self.onTaskProgress)
+        signals.task_complete.connect(self.onTaskComplete)
 
 
     def initUI(self):

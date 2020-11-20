@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QRadioButton, QButtonGroup
 
-from utils import stringUtils
+from utils import string
 
 
 class ErrorTypeInput(QWidget):
@@ -11,7 +11,7 @@ class ErrorTypeInput(QWidget):
         layout.setContentsMargins(5,4,0,0)
 
         self._typeGroup = QButtonGroup()
-        for i, option in enumerate(stringUtils.ERROR_TYPE_OPTIONS):
+        for i, option in enumerate(string.ERROR_TYPE_OPTIONS):
             button = QRadioButton(option)
             button.option = option
             button.setChecked(option == defaultType)
@@ -20,8 +20,8 @@ class ErrorTypeInput(QWidget):
         self._typeGroup.buttonReleased.connect(validation)
 
         self._sigmasGroup = QButtonGroup()
-        for i, option in enumerate(stringUtils.ERROR_SIGMA_OPTIONS):
-            button = QRadioButton(stringUtils.get_error_sigmas_str(option))
+        for i, option in enumerate(string.ERROR_SIGMA_OPTIONS):
+            button = QRadioButton(string.get_error_sigmas_str(option))
             button.option = option
             button.setChecked(option == defaultSigmas)
             self._sigmasGroup.addButton(button, i)
@@ -31,7 +31,7 @@ class ErrorTypeInput(QWidget):
         self.setLayout(layout)
 
     def getErrorType(self):
-        return stringUtils.ERROR_TYPE_OPTIONS[self._typeGroup.checkedId()]
+        return string.ERROR_TYPE_OPTIONS[self._typeGroup.checkedId()]
 
     def getErrorSigmas(self):
-        return stringUtils.ERROR_SIGMA_OPTIONS[self._sigmasGroup.checkedId()]
+        return string.ERROR_SIGMA_OPTIONS[self._sigmasGroup.checkedId()]

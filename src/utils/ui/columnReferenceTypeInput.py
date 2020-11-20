@@ -1,4 +1,4 @@
-from utils.csvUtils import ColumnReferenceType
+from model.settings.columnIndex import ColumnReferenceType
 from utils.ui.radioButtons import RadioButtons
 
 

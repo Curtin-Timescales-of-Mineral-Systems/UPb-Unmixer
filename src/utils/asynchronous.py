@@ -12,12 +12,11 @@ class SignalType(Enum):
     ERRORED = 5,
 
 
-"""
-An object that the child process uses to send information to the PyQT thread
-"""
-
-
 class ProcessSignals:
+    """
+    An object that the child process uses to send information to the PyQT thread
+    """
+
     def __init__(self):
         self.queue = Queue()
         self._halt = Value('i', 0)
@@ -76,21 +75,21 @@ class AsyncTask(QThread):
 
     def _processOutput(self, output):
         if output[0] is SignalType.PROGRESS:
-            self.pyqtSignals.processingProgress.emit(output[1:])
+            self.pyqtSignals.processing_progress.emit(output[1:])
             return
 
         if output[0] is SignalType.COMPLETED:
-            self.pyqtSignals.processingCompleted.emit(output[1:])
+            self.pyqtSignals.processing_completed.emit()
             self.running = False
             return
 
         if output[0] is SignalType.CANCELLED:
-            self.pyqtSignals.processingCancelled.emit()
+            self.pyqtSignals.processing_cancelled.emit()
             self.running = False
             return
 
         if output[0] is SignalType.ERRORED:
-            self.pyqtSignals.processingErrored.emit(output[1:])
+            self.pyqtSignals.processing_errored.emit(output[1:])
             self.running = False
             return
 

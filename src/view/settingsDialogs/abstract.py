@@ -5,7 +5,10 @@ from utils.ui import uiUtils
 
 
 class AbstractSettingsDialog(QDialog):
-
+    """
+    Abstract parent class for common functionality shared between settings dialogs
+    in the U-Pb mixer application.
+    """
     def __init__(self, defaultSettings, *args, **kwargs):
         super(QDialog, self).__init__(*args, **kwargs)
         self.__aligned_form_layouts = []
@@ -16,15 +19,15 @@ class AbstractSettingsDialog(QDialog):
         self._validate()
 
     def initUI(self):
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.initMainSettings())
-        self.layout.addWidget(self.initErrorLabel())
-        self.layout.addWidget(self.initButtons())
-        self.setLayout(self.layout)
+        layout = QVBoxLayout()
+        layout.addWidget(self._init_main_settings())
+        layout.addWidget(self.initErrorLabel())
+        layout.addWidget(self.initButtons())
+        self.setLayout(layout)
 
-    ###############
-    ## UI layout ##
-    ###############
+    #############
+    # UI layout #
+    #############
 
     def initButtons(self):
         self.okButton = QPushButton("OK")
@@ -70,9 +73,9 @@ class AbstractSettingsDialog(QDialog):
         for label in labels:
             label.setMinimumWidth(width)
 
-    ################
-    ## Validation ##
-    ################
+    ##############
+    # Validation #
+    ##############
 
     def _validate(self):
         settings = self._createSettings()
@@ -85,19 +88,18 @@ class AbstractSettingsDialog(QDialog):
         self.settings = settings
 
     def createLabelWithHelp(self, labelText, helpText):
-
         label = QLabel(labelText)
 
         icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxQuestion"))
         pixmap = icon.pixmap(QSize(20, 20))
-        iconLabel = QLabel()
-        iconLabel.setPixmap(pixmap)
-        iconLabel.setToolTip(helpText)
+        icon_label = QLabel()
+        icon_label.setPixmap(pixmap)
+        icon_label.setToolTip(helpText)
 
         layout = QHBoxLayout()
-        layout.addWidget(iconLabel)
+        layout.addWidget(icon_label)
         layout.addWidget(label)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         widget = QWidget()
         widget.setLayout(layout)

@@ -1,55 +1,45 @@
-from utils import stringUtils
+from typing import Optional
+
+from utils import string
 
 
 class Cell:
-    def __init__(self, value, isImported):
-        self.value = value
-        self._isImported = isImported
 
-    def isValid(self):
-        return self.value is not None
+    def is_input_cell(self):
+        return isinstance(self, InputCell)
 
-    def isImported(self):
-        return self._isImported
-
-    def isCalculated(self):
-        return not self._isImported
-
-
-class ImportedCell(Cell):
-    def __init__(self, rawValue):
-        self._rawValue = rawValue
+class InputCell(Cell):
+    def __init__(self, raw_str: str):
+        super().__init__()
         try:
-            value = float(rawValue)
-        except:
-            value = None
-        super().__init__(value, True)
-
-    def getDisplayString(self):
-        if self.value is None:
-            return self._rawValue
-        return str(stringUtils.round_to_sf(self.value, 5))
+            self.value = float(raw_str)
+            self._is_valid = True
+            self._display_str = str(string.round_to_sf(self.value, 5))
+        except (ValueError, TypeError):
+            self.value = None
+            self._is_valid = False
+            self._display_str = raw_str
 
 
-class UncalculatedCell(Cell):
-    def __init__(self):
-        super().__init__(None, False)
+    def is_valid(self):
+        return self._display_str is not ""
 
-    def isValid(self):
-        return True
+    def get_display_string(self):
+        return self._display_str
 
-    def getDisplayString(self):
-        return ""
+class OutputCell(Cell):
+    def __init__(self, value: Optional[float]):
+        super().__init__()
+        self._display_str = "" if value is None else str(string.round_to_sf(value, 5))
 
+    def is_input(self):
+        return False
 
-class CalculatedCell(Cell):
-    def __init__(self, value):
-        super().__init__(value, False)
+    def is_valid(self):
+        return self._display_str is ""
 
-    def isValid(self):
-        return self.value is not None
+    def get_display_string(self):
+        return self._display_str
 
-    def getDisplayString(self):
-        if self.value is None:
-            return ""
-        return str(stringUtils.round_to_sf(self.value, 5))
+    def get_export_string(self):
+        return self._display_str

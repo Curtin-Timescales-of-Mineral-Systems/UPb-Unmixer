@@ -2,18 +2,18 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
 from model.column import Column
-from model.settings.imports import UnmixImportSettings
+from model.settings.columnIndex import ColumnReferenceType
+from model.settings.imports import ImportSettings
 from view.settingsDialogs.abstract import AbstractSettingsDialog
 
-from utils import stringUtils
-from utils.csvUtils import ColumnReferenceType
+from utils import string
 from utils.ui import uiUtils
 from utils.ui.columnReferenceInput import ColumnReferenceInput
 from utils.ui.columnReferenceTypeInput import ColumnReferenceTypeInput
 from utils.ui.errorTypeInput import ErrorTypeInput
 
 
-class UnmixImportSettingsDialog(AbstractSettingsDialog):
+class ImportSettingsDialog(AbstractSettingsDialog):
 
     def __init__(self, defaultSettings, *args, **kwargs):
         super().__init__(defaultSettings, *args, **kwargs)
@@ -23,10 +23,10 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
     ## UI layout ##
     ###############
 
-    def initMainSettings(self):
+    def _init_main_settings(self):
         # Defaults
         defaults = self.defaultSettings
-        columnRefs = self.defaultSettings.getDisplayColumnsByRefs()
+        column_refs = self.defaultSettings.get_input_columns_by_indices()
 
         self._generalSettingsWidget = GeneralSettingsWidget(self._validate, defaults)
         self._generalSettingsWidget.columnRefChanged.connect(self._onColumnRefChange)
@@ -34,41 +34,41 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
         self._rimAgeWidget = ImportedValueErrorWidget(
             "Rim age",
             self._validate,
-            defaults.columnReferenceType,
-            columnRefs[Column.RIM_AGE_VALUE],
-            columnRefs[Column.RIM_AGE_ERROR],
-            defaults.rimAgeErrorType,
-            defaults.rimAgeErrorSigmas
+            defaults.column_reference_type,
+            column_refs[Column.RIM_AGE_VALUE],
+            column_refs[Column.RIM_AGE_ERROR],
+            defaults.rim_age_error_type,
+            defaults.rim_age_error_sigmas
         )
 
         self._mixedUPbWidget = ImportedValueErrorWidget(
-            "Mixed " + stringUtils.getUPbStr(True),
+            "Mixed " + string.getUPbStr(True),
             self._validate,
-            defaults.columnReferenceType,
-            columnRefs[Column.MIXED_U_PB_VALUE],
-            columnRefs[Column.MIXED_U_PB_ERROR],
-            defaults.mixedUPbErrorType,
-            defaults.mixedUPbErrorSigmas
+            defaults.column_reference_type,
+            column_refs[Column.MIXED_U_PB_VALUE],
+            column_refs[Column.MIXED_U_PB_ERROR],
+            defaults.mixed_uPb_error_type,
+            defaults.mixed_uPb_error_sigmas
         )
 
         self._mixedPbPbWidget = ImportedValueErrorWidget(
-            "Mixed " + stringUtils.getPbPbStr(True),
+            "Mixed " + string.getPbPbStr(True),
             self._validate,
-            defaults.columnReferenceType,
-            columnRefs[Column.MIXED_PB_PB_VALUE],
-            columnRefs[Column.MIXED_PB_PB_ERROR],
-            defaults.mixedPbPbErrorType,
-            defaults.mixedPbPbErrorSigmas
+            defaults.column_reference_type,
+            column_refs[Column.MIXED_PB_PB_VALUE],
+            column_refs[Column.MIXED_PB_PB_ERROR],
+            defaults.mixed_pbPb_error_type,
+            defaults.mixed_pbPb_error_sigmas
         )
 
         self._uThConcentrationWidget = UThConcentrationWidget(
             self._validate,
-            defaults.columnReferenceType,
-            columnRefs[Column.U_CONCENTRATION],
-            columnRefs[Column.TH_CONCENTRATION]
+            defaults.column_reference_type,
+            column_refs[Column.U_CONCENTRATION],
+            column_refs[Column.TH_CONCENTRATION]
         )
 
-        self._updateColumnRefs(defaults.columnReferenceType)
+        self._updateColumnRefs(defaults.column_reference_type)
 
         layout = QGridLayout()
         layout.setHorizontalSpacing(15)
@@ -88,8 +88,8 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
     ################
 
     def _onColumnRefChange(self, button):
-        newRefType = ColumnReferenceType(button.option)
-        self._updateColumnRefs(newRefType)
+        new_ref_type = ColumnReferenceType(button.option)
+        self._updateColumnRefs(new_ref_type)
         self._validate()
 
     def _updateColumnRefs(self, newRefType):
@@ -98,12 +98,12 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
         self._mixedPbPbWidget.changeColumnReferenceType(newRefType)
 
     def _createSettings(self):
-        settings = UnmixImportSettings()
-        settings.delimiter = self._generalSettingsWidget.getDelimiter()
-        settings.hasHeaders = self._generalSettingsWidget.getHasHeaders()
-        settings.columnReferenceType = self._generalSettingsWidget.getColumnReferenceType()
+        settings = ImportSettings()
+        settings.csv_delimiter = self._generalSettingsWidget.getDelimiter()
+        settings.csv_has_headers = self._generalSettingsWidget.getHasHeaders()
+        settings.column_reference_type = self._generalSettingsWidget.getColumnReferenceType()
 
-        settings._columnRefs = {
+        settings._column_references = {
             Column.RIM_AGE_VALUE: self._rimAgeWidget.getValueColumn(),
             Column.RIM_AGE_ERROR: self._rimAgeWidget.getErrorColumn(),
             Column.MIXED_U_PB_VALUE: self._mixedUPbWidget.getValueColumn(),
@@ -114,16 +114,14 @@ class UnmixImportSettingsDialog(AbstractSettingsDialog):
             Column.TH_CONCENTRATION: self._uThConcentrationWidget.getThColumn(),
         }
 
-        settings.rimAgeErrorType = self._rimAgeWidget.getErrorType()
-        settings.rimAgeErrorSigmas = self._rimAgeWidget.getErrorSigmas()
-        settings.mixedUPbErrorType = self._mixedUPbWidget.getErrorType()
-        settings.mixedUPbErrorSigmas = self._mixedUPbWidget.getErrorSigmas()
-        settings.mixedPbPbErrorType = self._mixedPbPbWidget.getErrorType()
-        settings.mixedPbPbErrorSigmas = self._mixedPbPbWidget.getErrorSigmas()
+        settings.rim_age_error_type = self._rimAgeWidget.getErrorType()
+        settings.rim_age_error_sigmas = self._rimAgeWidget.getErrorSigmas()
+        settings.mixed_uPb_error_type = self._mixedUPbWidget.getErrorType()
+        settings.mixed_uPb_error_sigmas = self._mixedUPbWidget.getErrorSigmas()
+        settings.mixed_pbPb_error_type = self._mixedPbPbWidget.getErrorType()
+        settings.mixed_pbPb_error_sigmas = self._mixedPbPbWidget.getErrorSigmas()
 
         return settings
-
-
 
 
 class GeneralSettingsWidget(QGroupBox):
@@ -131,16 +129,16 @@ class GeneralSettingsWidget(QGroupBox):
     def __init__(self, validation, defaultSettings):
         super().__init__("General settings")
 
-        self._delimiterEntry = QLineEdit(defaultSettings.delimiter)
+        self._delimiterEntry = QLineEdit(defaultSettings.csv_delimiter)
         self._delimiterEntry.textChanged.connect(validation)
         self._delimiterEntry.setFixedWidth(30)
         self._delimiterEntry.setAlignment(Qt.AlignCenter)
 
         self._hasHeadersCB = QCheckBox()
-        self._hasHeadersCB.setChecked(defaultSettings.hasHeaders)
+        self._hasHeadersCB.setChecked(defaultSettings.csv_has_headers)
         self._hasHeadersCB.stateChanged.connect(validation)
 
-        self._columnRefType = ColumnReferenceTypeInput(validation, defaultSettings.columnReferenceType)
+        self._columnRefType = ColumnReferenceTypeInput(validation, defaultSettings.column_reference_type)
         self.columnRefChanged = self._columnRefType.group.buttonReleased
 
         layout = QFormLayout()
@@ -159,12 +157,20 @@ class GeneralSettingsWidget(QGroupBox):
     def getColumnReferenceType(self):
         return self._columnRefType.selection()
 
-# A widget for importing an (value, error) pair
 
 class ImportedValueErrorWidget(QGroupBox):
+    """
+    A widget for importing an (value, error) pair
+    """
     width = 30
 
-    def __init__(self, title, validation, defaultReferenceType, defaultValueColumn, defaultErrorColumn, defaultErrorType, defaultErrorSigmas):
+    def __init__(self,
+                 title,
+                 validation,
+                 defaultReferenceType,
+                 defaultValueColumn,
+                 defaultErrorColumn,
+                 defaultErrorType, defaultErrorSigmas):
         super().__init__(title)
 
         self._valueColumn = ColumnReferenceInput(validation, defaultReferenceType, defaultValueColumn)
@@ -178,11 +184,11 @@ class ImportedValueErrorWidget(QGroupBox):
         layout.addRow("Error type", self._errorType)
         self.setLayout(layout)
 
-    def getValueColumn(self):
-        return self._valueColumn.text()
+    def getValueColumn(self) -> int:
+        return self._valueColumn.get_column_index()
 
-    def getErrorColumn(self):
-        return self._errorColumn.text()
+    def getErrorColumn(self) -> int:
+        return self._errorColumn.get_column_index()
 
     def getErrorType(self):
         return self._errorType.getErrorType()
@@ -191,8 +197,9 @@ class ImportedValueErrorWidget(QGroupBox):
         return self._errorType.getErrorSigmas()
 
     def changeColumnReferenceType(self, newReferenceType):
-        self._valueColumn.changeColumnReferenceType(newReferenceType)
-        self._errorColumn.changeColumnReferenceType(newReferenceType)
+        self._valueColumn.set_column_reference_type(newReferenceType)
+        self._errorColumn.set_column_reference_type(newReferenceType)
+
 
 class UThConcentrationWidget(QGroupBox):
 
@@ -209,11 +216,11 @@ class UThConcentrationWidget(QGroupBox):
         self.setLayout(layout)
 
     def getUColumn(self):
-        return self._uColumn.text()
+        return self._uColumn.get_column_index()
 
     def getThColumn(self):
-        return self._thColumn.text()
+        return self._thColumn.get_column_index()
 
     def changeColumnReferenceType(self, newReferenceType):
-        self._uColumn.changeColumnReferenceType(newReferenceType)
-        self._thColumn.changeColumnReferenceType(newReferenceType)
+        self._uColumn.set_column_reference_type(newReferenceType)
+        self._thColumn.set_column_reference_type(newReferenceType)

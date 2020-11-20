@@ -1,61 +1,68 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QLineEdit, QStyle, QHBoxLayout, QWidget, QTableWidget, \
-    QTableWidgetItem, QLabel
+from typing import List
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QLineEdit, QStyle, QHBoxLayout, QWidget, QTableWidget, \
+    QTableWidgetItem
+
+from model.cell import Cell
+from model.model import Model
+from model.signals import Signals
+from model.spot import Spot
 from utils import config
-from utils.stringUtils import pluralise
+from utils.string import pluralise
 from utils.ui import uiUtils
 
 
-class UnmixDataPanel(QGroupBox):
+class DataPanel(QGroupBox):
 
-    def __init__(self, controller, *args, **kwargs):
-        super().__init__("Data", *args, **kwargs)
+    def __init__(self, application):
+        super().__init__("Data")
 
-        self.controller = controller
+        self._application = application
+        self._init_ui()
+        self._init_signals(application.signals)
 
-        self.controller.signals.headersUpdated.connect(self.onHeadersUpdated)
-        self.controller.signals.rowUpdated.connect(self.onRowUpdated)
-        self.controller.signals.allRowsUpdated.connect(self.onAllRowsUpdated)
+    ###############
+    # UI creation #
+    ###############
 
-        self.controller.signals.processingStarted.connect(self.onProcessingStart)
-        self.controller.signals.processingCompleted.connect(self.onProcessingEnd)
-        self.controller.signals.processingErrored.connect(self.onProcessingEnd)
-        self.controller.signals.processingCancelled.connect(self.onProcessingEnd)
+    def _init_signals(self, signals: Signals):
+        signals.csv_imported.connect(self._on_csv_imported)
 
-        self._initUI()
+        signals.headers_updated.connect(self._on_headers_updated)
+        signals.row_updated.connect(self._on_row_updated)
+        signals.all_rows_updated.connect(self._on_all_rows_updated)
 
-    #############
-    ## UI spec ##
-    #############
+        signals.processing_started.connect(self._on_processing_start)
+        signals.processing_completed.connect(self._on_processing_end)
+        signals.processing_errored.connect(self._on_processing_end)
+        signals.processing_cancelled.connect(self._on_processing_end)
 
-    def _initUI(self):
-        self._initImportWidget()
-        self._initWarningLabels()
-        self._initDataTable()
-        self._initActionButtonsWidget()
+    def _init_ui(self):
+        self._init_import_widget()
+        self._init_warning_labels()
+        self._init_data_table()
+        self._init_action_buttons_widget()
 
         layout = QVBoxLayout()
         layout.addWidget(self.importWidget)
-        layout.addWidget(self.dataTable)
+        layout.addWidget(self.data_table)
         layout.addWidget(self.warningsWidget)
         layout.addWidget(self.actionButtonsWidget)
         self.setLayout(layout)
 
         self.actionButtonsWidget.hide()
 
-    def _initImportWidget(self):
-
+    def _init_import_widget(self):
         self.importButton = QPushButton("  Import CSV")
-        self.importButton.clicked.connect(self.controller.importCSV)
+        self.importButton.clicked.connect(self._application.import_csv)
         self.importButton.setIcon(self.style().standardIcon(QStyle.SP_DialogOpenButton))
 
         self.importFileText = QLineEdit("")
         self.importFileText.setReadOnly(True)
 
         self.helpButton = QPushButton("  Help")
-        self.helpButton.clicked.connect(self.controller.showHelp)
+        self.helpButton.clicked.connect(self._application.show_help)
         self.helpButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxQuestion))
 
         layout = QHBoxLayout()
@@ -67,11 +74,15 @@ class UnmixDataPanel(QGroupBox):
         self.importWidget = QWidget()
         self.importWidget.setLayout(layout)
 
-    def _initWarningLabels(self):
-        self.invalidDataWidget, self.invalidDataLabel = uiUtils.createIconWithLabel(self.style().standardIcon(QStyle.SP_MessageBoxCritical), "Hi")
-        self.invalidCalculationWidget, self.invalidCalculationLabel = uiUtils.createIconWithLabel(self.style().standardIcon(QStyle.SP_MessageBoxWarning), "Hi2")
-        self.rejectedCalculationWidget, self.rejectedCalculationLabel = uiUtils.createIconWithLabel(self.style().standardIcon(QStyle.SP_MessageBoxWarning), "hi")
-        self.validCalculationWidget, self.validCalculationLabel = uiUtils.createIconWithLabel(self.style().standardIcon(QStyle.SP_DialogApplyButton), "hi")
+    def _init_warning_labels(self):
+        self.invalidDataWidget, self.invalidDataLabel = uiUtils.createIconWithLabel(
+            self.style().standardIcon(QStyle.SP_MessageBoxCritical), "Hi")
+        self.invalidCalculationWidget, self.invalidCalculationLabel = uiUtils.createIconWithLabel(
+            self.style().standardIcon(QStyle.SP_MessageBoxWarning), "Hi2")
+        self.rejectedCalculationWidget, self.rejectedCalculationLabel = uiUtils.createIconWithLabel(
+            self.style().standardIcon(QStyle.SP_MessageBoxWarning), "hi")
+        self.validCalculationWidget, self.validCalculationLabel = uiUtils.createIconWithLabel(
+            self.style().standardIcon(QStyle.SP_DialogApplyButton), "hi")
 
         self.invalidDataWidget.setVisible(False)
         self.invalidCalculationWidget.setVisible(False)
@@ -88,27 +99,27 @@ class UnmixDataPanel(QGroupBox):
         self.warningsWidget = QWidget()
         self.warningsWidget.setLayout(layout)
 
-    def _initDataTable(self):
-        self.dataTable = QTableWidget(1, 1)
-        self.dataTable.resizeColumnsToContents()
-        self.dataTable.resizeRowsToContents()
-        self.dataTable.hide()
-        self.dataTable.itemSelectionChanged.connect(self._selectionChanged)
-        uiUtils.retainSizeWhenHidden(self.dataTable)
+    def _init_data_table(self):
+        self.data_table = QTableWidget(1, 1)
+        self.data_table.resizeColumnsToContents()
+        self.data_table.resizeRowsToContents()
+        self.data_table.hide()
+        self.data_table.itemSelectionChanged.connect(self._on_table_selection_changed)
+        uiUtils.retainSizeWhenHidden(self.data_table)
 
-    def _initTableWidgetItem(self, content):
+    def _init_table_widget_item(self, content):
         cell = QTableWidgetItem(str(content))
         cell.setTextAlignment(Qt.AlignHCenter)
         cell.setFlags(cell.flags() ^ Qt.ItemIsEditable)
         return cell
 
-    def _initActionButtonsWidget(self):
+    def _init_action_buttons_widget(self):
         self.processButton = QPushButton("  Process")
-        self.processButton.clicked.connect(self.controller.process)
+        self.processButton.clicked.connect(self._application.process)
         self.processButton.setIcon(self.style().standardIcon(QStyle.SP_ArrowForward))
 
         self.exportButton = QPushButton("  Export CSV")
-        self.exportButton.clicked.connect(self.controller.exportCSV)
+        self.exportButton.clicked.connect(self._application.exportCSV)
         self.exportButton.setEnabled(False)
         self.exportButton.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
 
@@ -118,113 +129,124 @@ class UnmixDataPanel(QGroupBox):
         layout.addWidget(self.exportButton)
         self.actionButtonsWidget.setLayout(layout)
 
-    ######################
-    ## Event processing ##
-    ######################
+    ####################
+    # Event processing #
+    ####################
 
-    def afterSuccessfulCSVImport(self, inputFile):
-        self.importFileText.setText(inputFile)
+    def _on_csv_imported(self, success: bool, input_file: str) -> None:
+        if not success:
+            return
 
-        self.dataTable.show()
+        self.importFileText.setText(input_file)
+
+        self.data_table.show()
         self.actionButtonsWidget.show()
         self.exportButton.show()
 
-    def _selectionChanged(self):
-        rowIndices = sorted(set(index.row() for index in self.dataTable.selectedIndexes()))
-        self.controller.selectRows(rowIndices)
+    def _on_table_selection_changed(self) -> None:
+        row_indices = sorted(set(index.row() for index in self.data_table.selectedIndexes()))
+        self._application.selectRows(row_indices)
 
-    def onProcessingStart(self):
+    def _on_processing_start(self) -> None:
         for button in self.getActionButtons():
             button.setEnabled(button == self.processButton)
         self.processButton.setEnabled(True)
         self.processButton.setText("  Cancel processing")
         self.processButton.setIcon(self.style().standardIcon(QStyle.SP_DialogCancelButton))
-        self.processButton.clicked.disconnect(self.controller.process)
-        self.processButton.clicked.connect(self.controller.cancelProcessing)
+        self.processButton.clicked.disconnect(self._application.process)
+        self.processButton.clicked.connect(self._application.cancelProcessing)
 
-    def onProcessingEnd(self):
+    def _on_processing_end(self) -> None:
         for button in self.getActionButtons():
             button.setEnabled(True)
         self.processButton.setText("  Process")
         self.processButton.setIcon(self.style().standardIcon(QStyle.SP_ArrowForward))
-        self.processButton.clicked.disconnect(self.controller.cancelProcessing)
-        self.processButton.clicked.connect(self.controller.process)
+        self.processButton.clicked.disconnect(self._application.cancelProcessing)
+        self.processButton.clicked.connect(self._application.process)
 
-    def onHeadersUpdated(self, headers):
-        self.dataTable.setColumnCount(len(headers))
-        self.dataTable.setHorizontalHeaderLabels(headers)
+    def _on_headers_updated(self) -> None:
+        headers = self._application.model.get_headers_for_display()
+        self.data_table.setColumnCount(len(headers))
+        self.data_table.setHorizontalHeaderLabels(headers)
 
-    def onAllRowsUpdated(self, rows):
-        self.dataTable.setRowCount(len(rows))
-        for index, row in enumerate(rows):
-            self.onRowUpdated(index, row, rows)
+    def _on_all_rows_updated(self) -> None:
+        rows = self._application.model.get_spots()
+        self.data_table.setRowCount(len(rows))
+        for i in range(len(rows)):
+            self._on_row_updated(i)
 
-    def onRowUpdated(self, i, row, allRows):
-        self._refreshRowHeader(i, row)
-        self._refreshRowData(i, row)
-        self._refreshWarningLabels(allRows)
+    def _on_row_updated(self, i: int) -> None:
+        rows = self._application.model.get_spots()
+        row = rows[i]
 
-        self.dataTable.resizeColumnsToContents()
-        self.dataTable.resizeRowsToContents()
+        self._refresh_row_header(i, row)
+        self._refresh_row_data(i, row)
+        self._refresh_warning_labels(rows)
 
+        self.data_table.resizeColumnsToContents()
+        self.data_table.resizeRowsToContents()
 
-    def _refreshWarningLabels(self, rows):
-        invalidDataRows = len([row for row in rows if not row.validImports])
-        invalidCalculationRows = len([row for row in rows if row.processed and row.validImports and not row.validOutput])
-        rejectedCalculationRows = len([row for row in rows if row.processed and row.validOutput and row.rejected])
-        acceptedRows =  len([row for row in rows if row.processed and row.validOutput and not row.rejected])
+    ###########
+    # Actions #
+    ###########
 
-        self.invalidDataWidget.setVisible(invalidDataRows > 0)
-        self.invalidCalculationWidget.setVisible(invalidCalculationRows > 0)
-        self.rejectedCalculationWidget.setVisible(rejectedCalculationRows > 0)
-        self.validCalculationWidget.setVisible(acceptedRows > 0)
+    def _refresh_warning_labels(self, spots: List[Spot]) -> None:
+        rows_with_invalid_inputs = len([spot for spot in spots if spot.has_invalid_inputs()])
+        rows_with_invalid_outputs = len([spot for spot in spots if spot.has_invalid_outputs()])
+        rows_with_rejected_outputs = len([spot for spot in spots if spot.has_rejected_outputs()])
+        rows_accepted = len([spot for spot in spots if spot.has_accepted_outputs()])
 
-        self.invalidDataLabel.setText(pluralise("spot", invalidDataRows) + " with invalid data imported from the CSV file.")
-        self.invalidCalculationLabel.setText(pluralise("spot", invalidCalculationRows) + " for which reconstructed core age cannot be calculated.")
-        self.rejectedCalculationLabel.setText(pluralise("spot", rejectedCalculationRows) + " for which the calculated reconstructed core age is deemed unreliable.")
-        self.validCalculationLabel.setText(pluralise("spot", acceptedRows) + " for which the core age was successfully reconstructed.")
+        self.invalidDataWidget.setVisible(rows_with_invalid_inputs > 0)
+        self.invalidCalculationWidget.setVisible(rows_with_invalid_outputs > 0)
+        self.rejectedCalculationWidget.setVisible(rows_with_rejected_outputs > 0)
+        self.validCalculationWidget.setVisible(rows_accepted > 0)
 
-    def _refreshRowHeader(self, i, row):
-        header = self._initTableWidgetItem(i + 1)
-        self.dataTable.setVerticalHeaderItem(i, header)
+        self.invalidDataLabel.setText(f'{pluralise("spot", rows_with_invalid_inputs)} with invalid data imported from the CSV file.')
+        self.invalidCalculationLabel.setText(f'{pluralise("spot", rows_with_invalid_outputs)} for which reconstructed core age cannot be calculated.')
+        self.rejectedCalculationLabel.setText(f'{pluralise("spot", rows_with_rejected_outputs)} for which the calculated reconstructed core age is deemed unreliable.')
+        self.validCalculationLabel.setText(f'{pluralise("spot", rows_accepted)} for which the core age was successfully reconstructed.')
 
-        if not row.validImports:
+    def _refresh_row_header(self, i: int, spot: Spot) -> None:
+        header = self._init_table_widget_item(i + 1)
+        self.data_table.setVerticalHeaderItem(i, header)
+
+        if spot.has_invalid_inputs():
             header.setBackground(config.Q_INVALID_IMPORT_COLOUR)
             return
-        if not row.processed:
+
+        if not spot.has_outputs():
             return
-        if not row.validOutput:
+        if spot.has_invalid_outputs():
             header.setBackground(config.Q_INVALID_CALCULATION_COLOUR)
             return
-        if row.rejected:
+        if spot.has_rejected_outputs():
             header.setBackground(config.Q_REJECTED_CALCULATION_COLOUR)
             return
         header.setBackground(config.Q_VALID_CALCULATION_COLOUR)
 
-    def _refreshRowData(self, i, row):
-        print("")
-        for j, cell in enumerate(row.getDisplayCells()):
-            tableCell = self._initTableWidgetItem(cell.getDisplayString())
-            self._setCellColour(tableCell, row, cell, j)
-            self.dataTable.setItem(i, j, tableCell)
-        self.dataTable.viewport().update()
-        self.dataTable.resizeColumnsToContents()
+    def _refresh_row_data(self, i: int, spot: Spot) -> None:
+        for j, cell in enumerate(spot.get_display_cells()):
+            table_cell = self._init_table_widget_item(cell.get_display_string())
+            self._set_cell_colour(table_cell, spot, cell, j)
+            self.data_table.setItem(i, j, table_cell)
+        self.data_table.viewport().update()
+        self.data_table.resizeColumnsToContents()
 
-    def _setCellColour(self, tableCell, row, dataCell, cellNumber):
-        if dataCell.isValid():
-            if row.rejected and cellNumber == 20:
-                tableCell.setBackground(config.Q_REJECTED_CALCULATION_COLOUR)
+    def _set_cell_colour(self, table_cell, spot: Spot, data_cell: Cell, cell_number: int) -> None:
+        if data_cell.is_valid():
+            if spot.has_rejected_outputs() and cell_number == 20:
+                table_cell.setBackground(config.Q_REJECTED_CALCULATION_COLOUR)
             return
 
-        if not row.validImports:
+        if spot.has_invalid_inputs():
             colour = config.Q_INVALID_IMPORT_COLOUR
         else:
             colour = config.Q_INVALID_CALCULATION_COLOUR
-        tableCell.setBackground(colour)
+        table_cell.setBackground(colour)
 
-    ###############
-    ## Utilities ##
-    ###############
+    #############
+    # Utilities #
+    #############
 
     def getActionButtons(self):
         return [self.importButton, self.processButton, self.exportButton]

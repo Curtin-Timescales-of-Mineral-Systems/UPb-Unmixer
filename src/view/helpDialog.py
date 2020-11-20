@@ -1,29 +1,29 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget, QDialog
+from PyQt5.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget, QDialog, QLayout
 
-from utils import config, stringUtils, calculations
+from utils import config, string, calculations
 
 
-class UnmixHelpDialog(QDialog):
+class HelpDialog(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(self.getTitle() + " help")
+        self.setWindowTitle(config.TITLE + " help")
 
-        aboutLabel = QLabel(self.getAboutHelpText())
-        aboutLabel.title = "About"
+        about_label: QLabel = QLabel(self.getAboutHelpText())
+        about_label.title = "About"
 
-        inputsLabel = QLabel(self.getInputsHelpText())
-        inputsLabel.title = "Inputs"
+        inputs_label: QLabel = QLabel(self.getInputsHelpText())
+        inputs_label.title = "Inputs"
 
-        processingLabel = QLabel(self.getProcessingHelpText())
-        processingLabel.title = "Processing"
+        processing_label: QLabel = QLabel(self.getProcessingHelpText())
+        processing_label.title = "Processing"
 
-        outputsLabel = QLabel(self.getOutputsHelpText())
-        outputsLabel.title = "Outputs"
+        outputs_label: QLabel = QLabel(self.getOutputsHelpText())
+        outputs_label.title = "Outputs"
 
-        tabWidget = QTabWidget()
-        for label in [aboutLabel, inputsLabel, processingLabel, outputsLabel]:
+        tab_widget = QTabWidget()
+        for label in [about_label, inputs_label, processing_label, outputs_label]:
             label.setTextFormat(Qt.RichText)
             label.setWordWrap(True)
             label.setTextInteractionFlags(Qt.TextSelectableByMouse|label.textInteractionFlags())
@@ -31,17 +31,14 @@ class UnmixHelpDialog(QDialog):
             layout.addWidget(label, 0, Qt.AlignTop)
             widget = QWidget()
             widget.setLayout(layout)
-            tabWidget.addTab(widget, label.title)
+            tab_widget.addTab(widget, label.title)
 
-        layout = QVBoxLayout()
-        layout.addWidget(tabWidget)
+        layout: QLayout = QVBoxLayout()
+        layout.addWidget(tab_widget)
 
         self.setLayout(layout)
 
-    def getTitle(self):
-        return config.U_PB_UNMIXER_TITLE
-
-    def _getStandardInputHelp(self):
+    def _getStandardInputHelp(self) -> str:
         return \
             "Data can be parsed from a range of csv file layouts by specifying which columns the required values are " \
             "in. Columns can be referred to either by using:" \
@@ -56,20 +53,21 @@ class UnmixHelpDialog(QDialog):
             "</ul>" \
             "If a row in the imported data is invalid then it will be highlighted in <font color='red'>RED</font>." \
             "<br>" \
-            "Symbols are not supported in column headings (e.g., ±, σ). Use only English alphabetic characters or numerals."
+            "Symbols are not supported in column headings (e.g., ±, σ). Use only English alphabetic characters or " \
+            "numerals."
 
-    def _getStandardProcessingHelp(self):
+    def _getStandardProcessingHelp(self) -> str:
         return \
             "Constants used:" \
             "<ul>" \
-            "<li> ²³⁸U/²³⁵U ratio " + "&nbsp;" * 9 + " = " + stringUtils.getConstantStr(calculations.U238U235_RATIO) + \
-            "<li> ²³⁸U decay constant " + "&nbsp;" * 1 + " = " + stringUtils.getConstantStr(calculations.U238_DECAY_CONSTANT) + \
-            "<li> ²³⁵U decay constant " + "&nbsp;" * 1 + " = " + stringUtils.getConstantStr(calculations.U235_DECAY_CONSTANT) + \
-            "<li> ²³²Th decay constant = " + stringUtils.getConstantStr(calculations.TH232_DECAY_CONSTANT) + \
-            "<li> Avogadro constant " + "&nbsp;" * 3 + " = " + stringUtils.getConstantStr(calculations.AVOGADROS_NUMBER) + \
+            "<li> ²³⁸U/²³⁵U ratio " + "&nbsp;" * 9 + " = " + string.getConstantStr(calculations.U238U235_RATIO) + \
+            "<li> ²³⁸U decay constant " + "&nbsp;" * 1 + " = " + string.getConstantStr(calculations.U238_DECAY_CONSTANT) + \
+            "<li> ²³⁵U decay constant " + "&nbsp;" * 1 + " = " + string.getConstantStr(calculations.U235_DECAY_CONSTANT) + \
+            "<li> ²³²Th decay constant = " + string.getConstantStr(calculations.TH232_DECAY_CONSTANT) + \
+            "<li> Avogadro constant " + "&nbsp;" * 3 + " = " + string.getConstantStr(calculations.AVOGADRO_NUMBER) + \
             "<ul>"
 
-    def _getStandardOutputsHelp(self):
+    def _getStandardOutputsHelp(self) -> str:
         return \
             "The plot may be fully customised (markers, colours, scale etc.) using the " \
             "button in the toolbar at the bottom. The plot can also be saved to various image formats." \
@@ -77,7 +75,7 @@ class UnmixHelpDialog(QDialog):
             "When the calculated values are exported back to a CSV file, the values are appended to the end of the " \
             "columns of the original CSV file."
 
-    def getInputsHelpText(self):
+    def getInputsHelpText(self) -> str:
         return \
             "Input data required: <ul>" \
             "<li> known age (in Ma) of rim (younger) component in mixture" \
@@ -87,7 +85,7 @@ class UnmixHelpDialog(QDialog):
             "</ul>" + \
             self._getStandardInputHelp()
 
-    def getProcessingHelpText(self):
+    def getProcessingHelpText(self) -> str:
         return \
             "Processing the data will attempt to calculate a reconstructed core age with associated uncertainty values." \
             "<br><br>" \
@@ -103,7 +101,7 @@ class UnmixHelpDialog(QDialog):
             "<br><br>"  + \
             self._getStandardProcessingHelp()
 
-    def getOutputsHelpText(self):
+    def getOutputsHelpText(self) -> str:
         return \
             "The following values are output:" \
             "<ul>" \
@@ -125,13 +123,13 @@ class UnmixHelpDialog(QDialog):
             "<br><br>"  + \
             self._getStandardOutputsHelp()
 
-    def getAboutHelpText(self):
+    def getAboutHelpText(self) -> str:
         link = "https://github.com/Curtin-Timescales-of-Mineral-Systems/UPb-Unmixer/issues"
         return \
             'This program is accompanied by the following paper which should be cited if it this program is used in your results' \
             '<p style="text-align: center">Hugo K.H. Olierook, Christopher L. Kirkland, Milo Barham,' \
             '<br>Matthew L. Daggitt, Julie Hollis, Michael Hartnady, ' \
-            '<br>Extracting meaningful U-Pb ages from core–rim mixtures, 2020<\p>' \
+            '<br>Extracting meaningful U-Pb ages from core–rim mixtures, Gondwana Research, 2020<\\p>' \
             '<br><br>' \
             'Please report any feedback or issues that you may have with this program on the ' \
-            'Github page at: <p style="text-align: center"><a href="' + link + '">' + link + '</a><\p>'
+            'Github page at: <p style="text-align: center"><a href="' + link + '">' + link + '</a><\\p>'

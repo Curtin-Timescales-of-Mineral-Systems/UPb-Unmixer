@@ -1,63 +1,58 @@
+from typing import Tuple, List, Optional
+
+from model.signals import Signals
+from model.settings.imports import ImportSettings
 from model.settings.type import SettingsType
-from model.row import Row
-from model.settings.calculation import UnmixCalculationSettings
+from model.spot import Spot, SpotOutputData
+from model.settings.calculation import CalculationSettings
 from utils.settings import Settings
 
 
-class UnmixModel:
+class Model:
+    """
+    Class that stores the application model, i.e. all the input and output data.
+    """
 
-    def __init__(self, signals):
-        self.signals = signals
-        self.rows = None
+    def __init__(self, application):
+        self._application = application
+        self._csv_headers: List[str] = None
+        self._csv_rows: List[List[str]] = None
+        self._spots = None
 
-    def resetCalculations(self):
-        importSettings = Settings.get(SettingsType.IMPORT)
-        calculationSettings = Settings.get(SettingsType.CALCULATION)
-        headers = importSettings.getHeaders() + calculationSettings.getHeaders()
+    def set_input_data(self,
+                       import_settings: ImportSettings,
+                       csv_headers: List[str],
+                       csv_rows: List[List[str]]) -> None:
+        self._csv_headers = csv_headers
+        self._csv_rows = csv_rows
+        self._spots = [Spot.parse(row, import_settings) for row in csv_rows]
 
-        for row in self.rows:
-            row.resetCalculatedCells()
+        self._application.signals.headers_updated.emit()
+        self._application.signals.all_rows_updated.emit()
 
-        self.signals.headersUpdated.emit(headers)
-        self.signals.allRowsUpdated.emit(self.rows)
+    def get_spots(self):
+        return self._spots
 
-    def updateRow(self, i, row):
-        self.rows[i] = row
-        self.signals.rowUpdated.emit(i, row, self.rows)
+    def set_row_output(self, i: int, output_data: SpotOutputData) -> None:
+        self._spots[i].set_output(output_data)
+        self._application.signals.row_updated.emit(i)
 
-    def loadRawData(self, importSettings, rawHeaders, rawRows):
-        self.rawHeaders = rawHeaders
-        self.rows = [Row(row, importSettings) for row in rawRows]
+    def clear_output_data(self) -> None:
+        for row in self._spots:
+            row.clear_output()
 
-        importHeaders = importSettings.getHeaders()
-        calculationHeaders = UnmixCalculationSettings.getDefaultHeaders()
-        headers = importHeaders + calculationHeaders
+        self._application.signals.headers_updated.emit()
+        self._application.signals.all_rows_updated.emit()
 
-        self.signals.headersUpdated.emit(headers)
-        self.signals.allRowsUpdated.emit(self.rows)
+    def get_headers_for_display(self) -> List[str]:
+        import_headers = Settings.get(SettingsType.IMPORT).get_headers_for_display()
+        calculation_headers = Settings.get(SettingsType.CALCULATION).get_default_headers_for_display()
+        return import_headers + calculation_headers
 
-    def getProcessingFunction(self):
-        return process
-
-    def getProcessingData(self):
-        return self.rows
-
-    def addProcessingOutput(self, *args):
-        pass
-
-    def getExportData(self, calculationSettings):
-        headers = self.rawHeaders + calculationSettings.getExportHeaders()
-        rows = [row.rawImportedValues + [cell.value for cell in row.calculatedCells] for row in self.rows]
+    def get_output_data_for_export(self, calculation_settings) -> Tuple[List[str], List[List[str]]]:
+        headers = self._csv_headers + calculation_settings.get_headers_for_export()
+        rows = [self._csv_rows[i] + [cell.get_export_string() for cell in self._spots[i].output_cells] for i in range(len(self._csv_rows))]
         return headers, rows
 
-    def getNumberOfRejectedRows(self):
-        return len([row for row in self.rows if row.rejected])
-
-def process(signals, rows, calculationSettings):
-    for i, row in enumerate(rows):
-        if signals.halt():
-            signals.cancelled()
-            return
-        row.process(calculationSettings)
-        signals.progress((i + 1) / len(rows), i, row)
-    signals.completed(None)
+    def get_number_of_rejected_rows(self) -> int:
+        return len([spot for spot in self._spots if spot.has_rejected_outputs()])

@@ -1,48 +1,51 @@
-import matplotlib
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QLabel, QGroupBox
+from typing import Tuple, Optional, List
 
-matplotlib.use('QT5Agg')
+import matplotlib
+#matplotlib.use('QT5Agg')
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGroupBox
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 import numpy as np
 
-from utils import config, stringUtils
+from model.settings.calculation import CalculationSettings
+from model.spot import Spot
+from utils import config, string
 import utils.calculations as calculations
 
 
-class UnmixGraphPanel(QGroupBox):
-    _default_xlim = (-1, 18)
-    _default_ylim = (0, 0.6)
+class GraphPanel(QGroupBox):
+    _default_x_lim = (-1, 18)
+    _default_y_lim = (0, 0.6)
 
-    def __init__(self, signals):
+    def __init__(self):
         super().__init__("TW concordia plot")
 
-        graphWidget = self.createGraph()
-        graphWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        graph_widget = self.createGraph()
+        graph_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         layout = QVBoxLayout()
-        layout.addWidget(graphWidget)
+        layout.addWidget(graph_widget)
         self.setLayout(layout)
 
-    def _setupConcordiaPlot(self, axis):
+    def _setup_concordia_plot(self, axis):
         axis.set_xlabel("${}^{238}U/{}^{206}Pb$")
         axis.set_ylabel("${}^{207}Pb/{}^{206}Pb$")
 
-        maxAge = 6000
-        minAge = 1
-        xMin = calculations.u238pb206_from_age(maxAge * (10 ** 6))
-        xMax = calculations.u238pb206_from_age(minAge * (10 ** 6))
+        max_age = 6000
+        min_age = 1
+        x_min = calculations.u238pb206_from_age(max_age * (10 ** 6))
+        x_max = calculations.u238pb206_from_age(min_age * (10 ** 6))
 
         # Plot concordia curve
-        xs = np.arange(xMin, xMax, 0.1)
+        xs = np.arange(x_min, x_max, 0.1)
         ys = [calculations.pb207pb206_from_u238pb206(x) for x in xs]
         axis.plot(xs, ys)
 
         # Plot concordia times
-        ts2 = list(range(100, 500, 100)) + list(range(500, maxAge + 1, 500))
+        ts2 = list(range(10, 100, 10)) + list(range(100, 500, 100)) + list(range(500, max_age + 1, 500))
         xs2 = [calculations.u238pb206_from_age(t * (10 ** 6)) for t in ts2]
         ys2 = [calculations.pb207pb206_from_age(t * (10 ** 6)) for t in ts2]
         axis.scatter(xs2, ys2)
@@ -57,13 +60,13 @@ class UnmixGraphPanel(QGroupBox):
 
     def createGraph(self):
         fig, self.axis = plt.subplots()
-        plt.xlim(*self._default_xlim)
-        plt.ylim(*self._default_ylim)
+        plt.xlim(*self._default_x_lim)
+        plt.ylim(*self._default_y_lim)
         plt.tight_layout(rect=[0.05, 0.08, 1, 0.95])
         self.axis.spines['top'].set_visible(False)
         self.axis.spines['right'].set_visible(False)
 
-        self._setupConcordiaPlot(self.axis)
+        self._setup_concordia_plot(self.axis)
 
         # plot
         self.canvas = FigureCanvas(fig)
@@ -80,48 +83,48 @@ class UnmixGraphPanel(QGroupBox):
 
     def displayRows(self, rows, calculationSettings):
         self.axis.clear()
-        self._setupConcordiaPlot(self.axis)
+        self._setup_concordia_plot(self.axis)
 
         if len(rows) == 1:
-            self._displayRow(rows[0], calculationSettings)
+            self._display_spot(rows[0], calculationSettings)
         elif rows:
-            self._displayRows(rows, calculationSettings)
+            self._display_spots(rows, calculationSettings)
 
         self.canvas.draw()
 
-    def _displayRow(self, row, calculationSettings):
+    def _display_spot(self, spot: Optional[Spot], settings: CalculationSettings):
 
-        if row is None or not row.validImports or not row.processed:
-            self.axis.set_xlim(*self._default_xlim)
-            self.axis.set_ylim(*self._default_ylim)
+        if spot is None or spot.has_invalid_inputs() or not spot.has_outputs():
+            self.axis.set_xlim(*self._default_x_lim)
+            self.axis.set_ylim(*self._default_y_lim)
 
-            if row is not None and not row.validImports:
+            if spot is not None and spot.has_invalid_inputs():
                 label = "(imported data in row is invalid)"
-            elif row is not None and not row.processed:
+            elif spot is not None and not spot.has_outputs():
                 label = "(row not yet processed)"
             else:
                 label = ""
             self.axis.text(0.95, 0.95, label, horizontalalignment='right', verticalalignment='top',
-                           transform=self.axis.transAxes)
+                                       transform=self.axis.transAxes)
             return
 
-        x1 = row.rimUPbValue
-        y1 = row.rimPbPbValue
-        x1_error = row.rimUPbStDev * calculationSettings.outputErrorSigmas
-        y1_error = row.rimPbPbStDev * calculationSettings.outputErrorSigmas
+        x1 = spot.outputs.rim_u_pb_value
+        y1 = spot.outputs.rim_pb_pb_value
+        x1_error = spot.outputs.rim_u_pb_st_dev * settings.output_error_sigmas
+        y1_error = spot.outputs.rim_pb_pb_st_dev * settings.output_error_sigmas
 
-        x2 = row.mixedUPbValue
-        y2 = row.mixedPbPbValue
-        x2_error = row.mixedUPbStDev * calculationSettings.outputErrorSigmas
-        y2_error = row.mixedPbPbStDev * calculationSettings.outputErrorSigmas
+        x2 = spot.inputs.mixed_u_pb_value
+        y2 = spot.inputs.mixed_pb_pb_value
+        x2_error = spot.inputs.mixed_u_pb_st_dev * settings.output_error_sigmas
+        y2_error = spot.inputs.mixed_pb_pb_st_dev * settings.output_error_sigmas
 
         # Data
         best_fit_line_xs = [x1, x2]
         best_fit_line_ys = [y1, y2]
 
-        reconstructedAge = row.reconstructedAgeObj
+        reconstructed_age = spot.outputs.reconstructed_age
 
-        if reconstructedAge is None:
+        if reconstructed_age is None:
             x3s = []
             y3s = []
             t_error_xs = []
@@ -129,28 +132,28 @@ class UnmixGraphPanel(QGroupBox):
             x3_errors = []
             y3_errors = []
             t3_fmt = 'none'
-            xlim = self._default_xlim
-            yStart = min(y1 - y1_error, y2 - y2_error)
-            yEnd = max(y1 + y1_error, y2 + y2_error)
-            _, ylim = self._calculateMargin(x2 - x2_error, x1 + x1_error, yStart, yEnd)
+            x_lim = self._default_x_lim
+            y_start = min(y1 - y1_error, y2 - y2_error)
+            y_end = max(y1 + y1_error, y2 + y2_error)
+            _, y_lim = self._calculate_margin(x2 - x2_error, x1 + x1_error, y_start, y_end)
             label_text = "(no intercept with concordia curve found)"
             colour = config.INVALID_CALCULATION_COLOUR
         else:
-            t, x3, y3 = reconstructedAge.values
-            t_min, x3_min, y3_min = reconstructedAge.minValues
-            t_max, x3_max, y3_max = reconstructedAge.maxValues
+            t, x3, y3 = reconstructed_age.get_values()
+            t_min, x3_min, y3_min = reconstructed_age.get_min_values()
+            t_max, x3_max, y3_max = reconstructed_age.get_max_values()
 
             best_fit_line_xs += [x3]
             best_fit_line_ys += [y3]
 
-            label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
+            label_text = "all errors at " + string.get_error_sigmas_str(settings.output_error_sigmas)
             if not t_min:
                 t_min = t
                 label_text += "\n (no lower error bar available for reconstructed age)"
             if not t_max:
                 t_max = t
                 label_text += "\n (no upper error bar available for reconstructed age)"
-            t3_fmt = 'none' if reconstructedAge.fullyValid else "^"
+            t3_fmt = 'none' if reconstructed_age.valid else "^"
 
             if not x3_min:
                 x3_min = x3
@@ -170,17 +173,17 @@ class UnmixGraphPanel(QGroupBox):
             t_error_xs = [calculations.u238pb206_from_age(t) for t in ts]
             t_error_ys = [calculations.pb207pb206_from_age(t) for t in ts]
 
-            xlim, ylim = self._calculateMargin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
+            x_lim, y_lim = self._calculate_margin(x3_min, x1 + x1_error, y1 - y1_error, y3_max)
 
-            if not reconstructedAge.fullyValid:
+            if not reconstructed_age.valid:
                 colour = config.INVALID_CALCULATION_COLOUR
-            elif row.rejected:
+            elif spot.outputs.rejected:
                 colour = config.REJECTED_CALCULATION_COLOUR
             else:
                 colour = config.VALID_CALCULATION_COLOUR
 
-        self.axis.set_xlim(*xlim)
-        self.axis.set_ylim(*ylim)
+        self.axis.set_xlim(*x_lim)
+        self.axis.set_ylim(*y_lim)
 
         # Best fit line
         self.axis.plot(best_fit_line_xs, best_fit_line_ys, linestyle='--', color=colour)
@@ -194,9 +197,9 @@ class UnmixGraphPanel(QGroupBox):
         self.axis.errorbar(x3s, y3s, xerr=x3_errors, yerr=y3_errors, fmt=t3_fmt, color=colour)
         # Text
         self.axis.text(0.95, 0.95, label_text, horizontalalignment='right', verticalalignment='top',
-                       transform=self.axis.transAxes)
+                                   transform=self.axis.transAxes)
 
-    def _displayRows(self, rows, calculationSettings):
+    def _display_spots(self, spots: List[Spot], settings: CalculationSettings):
         valid_xs = []
         valid_ys = []
         valid_xs_error_min = []
@@ -218,20 +221,20 @@ class UnmixGraphPanel(QGroupBox):
         rejected_ys_error_min = []
         rejected_ys_error_max = []
 
-        xmax, xmin = self._default_xlim
-        ymax, ymin = self._default_ylim
+        x_max, x_min = self._default_x_lim
+        y_max, y_min = self._default_y_lim
 
-        anyRows = False
-        anyInvalidRows = False
-        for row in rows:
-            if not row.validImports or not row.processed or row.reconstructedAgeObj is None:
+        any_rows = False
+        any_invalid_rows = False
+        for spot in spots:
+            if spot.has_invalid_inputs() or not spot.has_outputs() or spot.outputs.reconstructed_age is None:
                 continue
 
-            anyRows = True
-            reconstructedAge = row.reconstructedAgeObj
-            (t, x3, y3) = reconstructedAge.values
-            t_min, x3_min, y3_min = reconstructedAge.minValues
-            t_max, x3_max, y3_max = reconstructedAge.maxValues
+            any_rows = True
+            reconstructed_age = spot.outputs.reconstructed_age
+            t, x3, y3 = reconstructed_age.get_values()
+            t_min, x3_min, y3_min = reconstructed_age.get_min_values()
+            t_max, x3_max, y3_max = reconstructed_age.get_max_values()
 
             if not x3_min:
                 x3_min = x3
@@ -242,15 +245,15 @@ class UnmixGraphPanel(QGroupBox):
             if not y3_max:
                 y3_max = y3
 
-            if not reconstructedAge.fullyValid:
-                anyInvalidRows = True
+            if not reconstructed_age.valid:
+                any_invalid_rows = True
                 xs = invalid_xs
                 ys = invalid_ys
                 xs_error_min = invalid_xs_error_min
                 xs_error_max = invalid_xs_error_max
                 ys_error_min = invalid_ys_error_min
                 ys_error_max = invalid_ys_error_max
-            elif row.rejected:
+            elif spot.outputs.rejected:
                 xs = rejected_xs
                 ys = rejected_ys
                 xs_error_min = rejected_xs_error_min
@@ -265,14 +268,13 @@ class UnmixGraphPanel(QGroupBox):
                 ys_error_min = valid_ys_error_min
                 ys_error_max = valid_ys_error_max
 
-
             xs += [x3]
             ys += [y3]
 
-            xmin = min(xmin, x3_min)
-            xmax = max(xmax, x3_max)
-            ymin = min(ymin, y3_min)
-            ymax = max(ymax, y3_max)
+            x_min = min(x_min, x3_min)
+            x_max = max(x_max, x3_max)
+            y_min = min(y_min, y3_min)
+            y_max = max(y_max, y3_max)
 
             xs_error_min += [x3 - x3_min]
             xs_error_max += [x3_max - x3]
@@ -286,17 +288,19 @@ class UnmixGraphPanel(QGroupBox):
         rejected_xs_error = rejected_xs_error_min, rejected_xs_error_max
         rejected_ys_error = rejected_ys_error_min, rejected_ys_error_max
 
-        if anyRows:
-            xlim, ylim = self._calculateMargin(xmin, xmax, ymin, ymax)
+        if any_rows:
+            x_lim, y_lim = self._calculate_margin(x_min, x_max, y_min, y_max)
         else:
-            xlim, ylim = self._default_xlim, self._default_ylim
+            x_lim, y_lim = self._default_x_lim, self._default_y_lim
 
-        if not any(row.processed for row in rows):
+        if all(row.has_invalid_inputs() for row in spots):
+            label_text = "(imported data in rows is invalid)"
+        elif not any(row.has_outputs() for row in spots):
             label_text = "(rows not yet processed)"
         else:
-            label_text = "all errors at " + stringUtils.get_error_sigmas_str(calculationSettings.outputErrorSigmas)
+            label_text = "all errors at " + string.get_error_sigmas_str(settings.output_error_sigmas)
 
-        if anyInvalidRows:
+        if any_invalid_rows:
             label_text += "\n (some error bars unavailable)"
 
         self.axis.errorbar(
@@ -318,8 +322,8 @@ class UnmixGraphPanel(QGroupBox):
             color=config.REJECTED_CALCULATION_COLOUR
         )
 
-        self.axis.set_xlim(*xlim)
-        self.axis.set_ylim(*ylim)
+        self.axis.set_xlim(*x_lim)
+        self.axis.set_ylim(*y_lim)
         self.axis.text(
             0.95, 0.95,
             label_text,
@@ -328,14 +332,12 @@ class UnmixGraphPanel(QGroupBox):
             transform=self.axis.transAxes
         )
 
-    def _calculateMargin(self, xmin, xmax, ymin, ymax):
-        xmargin = xmax * 0.1
-        ymargin = ymax * 0.1
+    @staticmethod
+    def _calculate_margin(x_min, x_max, y_min, y_max) -> Tuple[float, float]:
+        x_margin = x_max * 0.1
+        y_margin = y_max * 0.1
 
-        xlim = (max(0, xmin - xmargin), xmax + xmargin)
-        ylim = (max(0, ymin - ymargin), ymax + ymargin)
+        x_lim = (max(0, x_min - x_margin), x_max + x_margin)
+        y_lim = (max(0, y_min - y_margin), y_max + y_margin)
 
-        return xlim, ylim
-
-    def updatePlot(self):
-        print("Update!")
+        return x_lim, y_lim

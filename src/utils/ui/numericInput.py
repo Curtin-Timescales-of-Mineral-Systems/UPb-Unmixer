@@ -36,13 +36,13 @@ class FloatInput(NumericInput):
 
 class AgeInput(FloatInput):
     def __init__(self, defaultValue=0.0, validation=None):
-        parseFn = lambda x: (10 ** 6) * float(x)
-        stringifyFn = lambda x: str(x / (10 ** 6))
-        super().__init__(defaultValue, validation, unit="Ma", parseFn=parseFn, stringifyFn=stringifyFn)
+        parse_fn = lambda x: (10 ** 6) * float(x)
+        stringify_fn = lambda x: str(x / (10 ** 6))
+        super().__init__(defaultValue, validation, unit="Ma", parseFn=parse_fn, stringifyFn=stringify_fn)
 
 
 class PercentageInput(FloatInput):
     def __init__(self, defaultValue=0.0, validation=None):
-        parseFn = lambda x: float(x) / 100
-        stringifyFn = lambda x: str(x * 100)
-        super().__init__(defaultValue, validation, unit="%", parseFn=parseFn, stringifyFn=stringifyFn)
+        parse_fn = lambda x: float(x) / 100
+        stringify_fn = lambda x: str(x * 100)
+        super().__init__(defaultValue, validation, unit="%", parseFn=parse_fn, stringifyFn=stringify_fn)

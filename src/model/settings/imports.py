@@ -1,96 +1,62 @@
+from typing import Dict, List
+
 from model.column import Column
-from utils import stringUtils, csvUtils
+from model.settings.columnIndex import ColumnReferenceType, ColumnIndex
+from utils import string, csvUtils
 
 from model.settings.type import SettingsType
-from utils.csvUtils import ColumnReferenceType
 
 
-class UnmixImportSettings:
-
+class ImportSettings:
+    """
+    User settings for importing data from a CSV file into the application.
+    """
     KEY = SettingsType.IMPORT
 
-    @staticmethod
-    def getImportedColumnHeaders():
-        return [
-            Column.RIM_AGE_VALUE,
-            Column.RIM_AGE_ERROR,
-            Column.MIXED_U_PB_VALUE,
-            Column.MIXED_U_PB_ERROR,
-            Column.MIXED_PB_PB_VALUE,
-            Column.MIXED_PB_PB_ERROR,
-            Column.U_CONCENTRATION,
-            Column.TH_CONCENTRATION
-        ]
-
     def __init__(self):
-        self.delimiter = ","
-        self.hasHeaders = True
-        self.columnReferenceType = ColumnReferenceType.LETTERS
-        self._columnRefs = {name: i for i, name in enumerate(self.getImportedColumnHeaders())}
+        self.csv_delimiter: str = ","
+        self.csv_has_headers: bool = True
 
-        self.rimAgeErrorType = "Absolute"
-        self.rimAgeErrorSigmas = 2
+        self.column_reference_type: ColumnReferenceType = ColumnReferenceType.LETTERS
+        self._column_references: dict[Column, int] = {col: i for i, col in enumerate(Column)}
 
-        self.mixedUPbErrorType = "Absolute"
-        self.mixedUPbErrorSigmas = 2
+        self.rim_age_error_type: str = "Absolute"
+        self.rim_age_error_sigmas: int = 2
 
-        self.mixedPbPbErrorType = "Absolute"
-        self.mixedPbPbErrorSigmas = 2
+        self.mixed_uPb_error_type: str = "Absolute"
+        self.mixed_uPb_error_sigmas: int = 2
 
-    def getDisplayColumns(self):
-        numbers = list(self._columnRefs.values())
-        numbers.sort()
-        return numbers
+        self.mixed_pbPb_error_type: str = "Absolute"
+        self.mixed_pbPb_error_sigmas: int = 2
 
-    def getDisplayColumnsWithRefs(self):
-        numbers = [(col, csvUtils.columnLettersToNumber(colRef, zeroIndexed=True)) for col, colRef in
-                   self._columnRefs.items()]
-        numbers.sort(key=lambda v: v[0].value)
-        return numbers
+    def get_largest_column_asked_for(self) -> int:
+        return max(self._column_references.values())
 
-    def getDisplayColumnsByRefs(self):
-        return self._columnRefs
+    def get_input_columns_by_indices(self) -> Dict[Column, int]:
+        return self._column_references
 
-
-    ## Error getters ##
-
-    def getRimAgeErrorStr(self):
-        return stringUtils.get_error_str(self.rimAgeErrorSigmas, self.rimAgeErrorType)
-
-    def getMixedUPbErrorStr(self):
-        return stringUtils.get_error_str(self.mixedUPbErrorSigmas, self.mixedUPbErrorType)
-
-    def getMixedPbPbErrorStr(self):
-        return stringUtils.get_error_str(self.mixedPbPbErrorSigmas, self.mixedPbPbErrorType)
-
-    ## Headers ##
-
-    def getHeaders(self):
+    def get_headers_for_display(self) -> List[str]:
         return [
             "Rim age (Ma)",
-            "±" + self.getRimAgeErrorStr(),
-            "Mixed " + stringUtils.U_PB_STR,
-            "±" + self.getMixedUPbErrorStr(),
-            "Mixed " + stringUtils.PB_PB_STR,
-            "±" + self.getMixedPbPbErrorStr(),
+            "±" + string.get_error_str(self.rim_age_error_sigmas, self.rim_age_error_type),
+            "Mixed " + string.U_PB_STR,
+            "±" + string.get_error_str(self.mixed_uPb_error_sigmas, self.mixed_uPb_error_type),
+            "Mixed " + string.PB_PB_STR,
+            "±" + string.get_error_str(self.mixed_pbPb_error_sigmas, self.mixed_pbPb_error_type),
             "U ppm",
             "Th ppm"
         ]
 
-    ## Validation ##
-
-
-    def validate(self):
-        if not all([v is not None for v in self._columnRefs.values()]):
+    def validate(self) -> str:
+        if not all([v is not None for v in self._column_references.values()]):
             return "Must enter a value for each column"
 
-        displayColumns = self.getDisplayColumns()
-        if len(set(displayColumns)) != len(displayColumns):
+        display_columns = self._column_references.values()
+        if len(set(display_columns)) != len(display_columns):
             return "Columns should not contain duplicates"
 
         return None
 
-
-    def upgradeToVersion1p1(self):
-        self._columnRefs[Column.U_CONCENTRATION] = 6
-        self._columnRefs[Column.TH_CONCENTRATION] = 7
+    def upgrade_to_version_1p1(self) -> None:
+        self._column_references[Column.U_CONCENTRATION] = 6
+        self._column_references[Column.TH_CONCENTRATION] = 7

@@ -1,74 +1,55 @@
-from utils import stringUtils
+from utils import string
 from model.settings.type import SettingsType
 
 
-class UnmixCalculationSettings:
-
+class CalculationSettings:
+    """
+    User settings for the calculation of the reconstructed rim ages.
+    """
     KEY = SettingsType.CALCULATION
 
     @staticmethod
-    def getCalculatedColumnHeaders():
-        return [
-            "reconstructedAge",
-            "reconstructedAgeMin",
-            "reconstructedAgeMax",
-            "reconstructedUPb",
-            "reconstructedUPbMin",
-            "reconstructedUPbMax",
-            "reconstructedPbPb",
-            "reconstructedPbPbMin",
-            "reconstructedPbPbMax",
-            "metamictScore",
-            "precisionScore",
-            "rimToCoreScore",
-            "totalScore",
-        ]
-
-    def __init__(self):
-        super().__init__()
-
-        self.outputErrorSigmas = 2
-        self.outputErrorType = "Absolute"
-
-    def getOutputErrorStr(self):
-        return stringUtils.get_error_str(self.outputErrorSigmas, self.outputErrorType)
-
-    def getOutputError(self, value, diff):
-        if self.outputErrorType == "Absolute":
-            return diff
-        return (diff / value) * 100.0
-
-    @staticmethod
-    def _getHeaders(outputErrorSigmas, outputErrorType, useUnicode):
-        error = stringUtils.get_error_str(outputErrorSigmas, outputErrorType, useUnicode)
-        minusError = "-" + error
-        plusError = "+" + error
+    def _get_headers(outputErrorSigmas: int, outputErrorType: str, useUnicode: bool) -> [str]:
+        error = string.get_error_str(outputErrorSigmas, outputErrorType, useUnicode)
+        minus_error = "-" + error
+        plus_error = "+" + error
 
         return [
             "Reconstructed age (Ma)",
-            minusError,
-            plusError,
-            "Reconstructed " + stringUtils.getUPbStr(useUnicode),
-            minusError,
-            plusError,
-            "Reconstructed " + stringUtils.getPbPbStr(useUnicode),
-            minusError,
-            plusError,
+            minus_error,
+            plus_error,
+            "Reconstructed " + string.getUPbStr(useUnicode),
+            minus_error,
+            plus_error,
+            "Reconstructed " + string.getPbPbStr(useUnicode),
+            minus_error,
+            plus_error,
             "Metamict score",
             "Precision score",
             "Core:rim score",
             "Total score",
         ]
 
-    def getHeaders(self):
-        return UnmixCalculationSettings._getHeaders(self.outputErrorSigmas, self.outputErrorType, True)
-
     @staticmethod
-    def getDefaultHeaders():
-        return UnmixCalculationSettings._getHeaders(2, "Absolute", True)
+    def get_default_headers_for_display() -> [str]:
+        return CalculationSettings._get_headers(2, "Absolute", True)
 
-    def getExportHeaders(self):
-        return UnmixCalculationSettings._getHeaders(self.outputErrorSigmas, self.outputErrorType, False)
+    def __init__(self):
+        super().__init__()
 
-    def validate(self):
+        self.output_error_sigmas: int = 2
+        self.output_error_type: str = "Absolute"
+
+    def get_output_error(self, value: float, diff: float) -> float:
+        if self.output_error_type == "Absolute":
+            return diff
+        return (diff / value) * 100.0
+
+    def get_headers_for_display(self) -> [str]:
+        return CalculationSettings._get_headers(self.output_error_sigmas, self.output_error_type, True)
+
+    def get_headers_for_export(self) -> [str]:
+        return CalculationSettings._get_headers(self.output_error_sigmas, self.output_error_type, False)
+
+    def validate(self) -> [str]:
         return None

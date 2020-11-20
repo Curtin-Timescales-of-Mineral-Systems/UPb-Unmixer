@@ -1,20 +1,20 @@
 from PyQt5.QtWidgets import QFormLayout, QWidget
 
-from model.settings.calculation import UnmixCalculationSettings
+from model.settings.calculation import CalculationSettings
 from view.settingsDialogs.abstract import AbstractSettingsDialog
 from utils.ui.errorTypeInput import ErrorTypeInput
 
 
-class UnmixCalculationSettingsDialog(AbstractSettingsDialog):
+class CalculationSettingsDialog(AbstractSettingsDialog):
 
     def __init__(self, defaultSettings, *args, **kwargs):
         super().__init__(defaultSettings, *args, **kwargs)
         self.setWindowTitle("Calculation settings")
 
-    def initMainSettings(self):
+    def _init_main_settings(self):
         defaults = self.defaultSettings
 
-        self._outputErrorSigmasRB = ErrorTypeInput(self._validate, defaults.outputErrorType, defaults.outputErrorSigmas)
+        self._outputErrorSigmasRB = ErrorTypeInput(self._validate, defaults.output_error_type, defaults.output_error_sigmas)
 
         layout = QFormLayout()
         layout.addRow("Output error type", self._outputErrorSigmasRB)
@@ -25,9 +25,9 @@ class UnmixCalculationSettingsDialog(AbstractSettingsDialog):
         return box
 
     def _createSettings(self):
-        settings = UnmixCalculationSettings()
+        settings = CalculationSettings()
 
-        settings.outputErrorType = self._outputErrorSigmasRB.getErrorType()
-        settings.outputErrorSigmas = self._outputErrorSigmasRB.getErrorSigmas()
+        settings.output_error_type = self._outputErrorSigmasRB.getErrorType()
+        settings.output_error_sigmas = self._outputErrorSigmasRB.getErrorSigmas()
 
         return settings
